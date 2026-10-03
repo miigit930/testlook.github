@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บริษัท ที.เค. ไอซ์ จำกัด - ระบบควบคุมโรงงานผลิตน้ำแข็งอัจฉริยะ</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet CSS & JS for Fleet GPS Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        ice: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0a3854',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(224, 242, 254, 0.8);
+        }
+
+        .ice-gradient-bg {
+            background: radial-gradient(circle at 20% 20%, rgba(186, 230, 253, 0.4) 0%, rgba(240, 249, 255, 0.8) 50%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .wave-bg {
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #7dd3fc 100%);
+        }
+
+        .sidebar-bright-gradient {
+            background: linear-gradient(180deg, #0284c7 0%, #0ea5e9 45%, #38bdf8 100%);
+        }
+
+        .data-transition {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .leaflet-div-icon {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            animation: pulse-ring-anim 1.8s infinite ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-ring-anim {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+        }
+
+        .hq-marker-glow {
+            animation: hq-glow 2s infinite alternate ease-in-out;
+        }
+        @keyframes hq-glow {
+            from { box-shadow: 0 0 10px #f59e0b, 0 0 20px #f59e0b; }
+            to { box-shadow: 0 0 18px #f59e0b, 0 0 35px #ef4444; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #pdf-print-area, #pdf-print-area * { visibility: visible; }
+            #pdf-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+    <!-- ========================================================================= -->
+    <!--  1. หน้าเว็บไซต์หลัก (LANDING PAGE VIEW)                                     -->
+    <!-- ========================================================================= -->
+    <div id="landing-page" class="w-full flex flex-col flex-1">
+        
+        <header class="sticky top-0 z-40 w-full glass-panel transition-all duration-300 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-ice-500 to-ice-300 flex items-center justify-center shadow-md shadow-ice-400/30 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid font-bold text-2xl text-white fa-cubes"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-extrabold bg-gradient-to-r from-ice-700 to-ice-500 bg-clip-text text-transparent tracking-tight">T.K.ICE</span>
+                        <p class="text-xs text-slate-500 font-medium tracking-wide">โรงงานผลิตน้ำแข็งคุณภาพ</p>
+                    </div>
+                </a>
+
+                <nav class="hidden md:flex items-center space-x-8 font-medium text-slate-600">
+                    <a href="#home" class="hover:text-ice-500 transition-colors py-1 border-b-2 border-ice-500 text-ice-600">หน้าแรก</a>
+                    <a href="#about" class="hover:text-ice-500 transition-colors py-1">เกี่ยวกับเรา</a>
+                    <a href="#products" class="hover:text-ice-500 transition-colors py-1">ผลิตภัณฑ์</a>
+                    <a href="#contact" class="hover:text-ice-500 transition-colors py-1">ติดต่อเรา</a>
+                </nav>
+
+                <div class="hidden md:flex items-center">
+                    <button onclick="openLoginModal()" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-ice-500 to-ice-400 text-white font-medium shadow-md hover:shadow-glow hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer">
+                        <span>สำหรับเจ้าหน้าที่</span>
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </button>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden glass-panel border-t border-slate-100 px-4 pt-2 pb-6 space-y-3">
+                <a href="#home" class="block py-2 text-ice-600 font-medium">หน้าแรก</a>
+                <a href="#about" class="block py-2 text-slate-600 hover:text-ice-500">เกี่ยวกับเรา</a>
+                <a href="#products" class="block py-2 text-slate-600 hover:text-ice-500">ผลิตภัณฑ์</a>
+                <a href="#contact" class="block py-2 text-slate-600 hover:text-ice-500">ติดต่อเรา</a>
+                <button onclick="openLoginModal()" class="w-full mt-2 py-3 rounded-xl bg-ice-500 text-white font-medium text-center shadow-md">
+                    สำหรับเจ้าหน้าที่ <i class="fa-solid fa-lock ml-1 text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="home" class="relative pt-12 pb-24 md:pt-20 md:pb-32 overflow-hidden ice-gradient-bg">
+            <div class="absolute top-10 left-10 w-32 h-32 bg-ice-300/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute bottom-10 right-10 w-64 h-64 bg-ice-400/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight">
+                            T.K.ICE <br/>
+                            <span class="bg-gradient-to-r from-ice-600 via-ice-500 to-ice-400 bg-clip-text text-transparent">โรงงานผลิตน้ำแข็งคุณภาพ</span>
+                        </h1>
+
+                        <p class="text-lg sm:text-xl text-slate-600 font-light max-w-2xl mx-auto lg:mx-0">
+                            สะอาด ปลอดภัย ได้มาตรฐานรองรับ GMP & ISO <br class="hidden sm:inline"/>
+                            พร้อมรองรับความต้องการ สำหรับธุรกิจ ร้านอาหาร คาเฟ่ และอุตสาหกรรม
+                        </p>
+
+                        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                            <a href="#products" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-ice-500 to-ice-600 text-white font-semibold shadow-lg shadow-ice-500/30 hover:shadow-glow hover:scale-105 transition-all text-center flex items-center justify-center gap-3">
+                                <span>ดูผลิตภัณฑ์ของเรา</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                            <a href="#contact" class="w-full sm:w-auto px-8 py-4 rounded-2xl glass-panel text-slate-700 font-semibold hover:bg-white transition-all text-center border border-slate-200">
+                                ติดต่อสั่งซื้อ / สอบถาม
+                            </a>
+                        </div>
+
+                        <div class="pt-8 grid grid-cols-3 gap-4 border-t border-ice-200/60 max-w-lg mx-auto lg:mx-0">
+                            <div>
+                                <p class="text-2xl sm:text-3xl font-bold text-ice-600">100%</p>
+                                <p class="text-xs sm:text-sm text-slate-500">น้ำกรองระบบ RO</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl sm:text-3xl font-bold text-ice-600">24/7</p>
+                                <p class="text-xs sm:text-sm text-slate-500">กำลังการผลิตต่อเนื่อง</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl sm:text-3xl font-bold text-ice-600">GMP</p>
+                                <p class="text-xs sm:text-sm text-slate-500">รับรองมาตรฐาน</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 relative">
+                        <div class="relative mx-auto max-w-md lg:max-w-none">
+                            <div class="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/90 group bg-slate-900">
+                                <img src="https://i.ibb.co/0yX2wLFY/tk-hero-jpg.jpg" 
+                                     alt="โรงงานน้ำแข็ง ทีเคไอซ์" 
+                                     class="w-full h-[420px] object-cover group-hover:scale-105 transition-transform duration-700">
+                            </div>
+
+                            <div class="absolute -top-6 -left-6 glass-card p-4 rounded-2xl shadow-lg border border-white hidden sm:flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <i class="fa-solid fa-temperature-arrow-down text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500">ความเย็นติดลบ</p>
+                                    <p class="text-sm font-bold text-slate-800">-18°C เย็นจัดยาวนาน</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Section -->
+        <section class="py-12 bg-white relative z-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-ice-300 transition-all hover:shadow-lg flex items-start gap-4 group">
+                        <div class="w-14 h-14 rounded-2xl bg-ice-500 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-slate-800">สะอาด ปลอดภัย</h4>
+                            <p class="text-slate-500 text-sm mt-1">ผ่านการกรองระบบ RO 8 ขั้นตอน พร้อมฆ่าเชื้อด้วยแสง UV และระบบโอโซน</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-ice-300 transition-all hover:shadow-lg flex items-start gap-4 group">
+                        <div class="w-14 h-14 rounded-2xl bg-ice-500 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-industry"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-slate-800">ผลิตได้ต่อเนื่อง</h4>
+                            <p class="text-slate-500 text-sm mt-1">เครื่องจักรทันสมัย กำลังการผลิตสูง รองรับความต้องการของธุรกิจทุกขนาด</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-ice-300 transition-all hover:shadow-lg flex items-start gap-4 group">
+                        <div class="w-14 h-14 rounded-2xl bg-ice-500 text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-slate-800">จัดส่งรวดเร็ว</h4>
+                            <p class="text-slate-500 text-sm mt-1">ขนส่งด้วยรถห้องเย็นมาตรฐาน ควบคุมอุณหภูมิจนถึงหน้าร้านของคุณ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Showcase Section -->
+        <section id="products" class="py-20 ice-gradient-bg relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-14">
+                    <span class="text-ice-600 font-semibold tracking-wider uppercase text-sm">Our Products</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">ผลิตภัณฑ์น้ำแข็งของเรา</h2>
+                    <p class="text-slate-600 mt-3 text-base sm:text-lg">สะอาด ใส ปลอดภัย ราคามิตรภาพ 30 - 35 บาท ทุกประเภท</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="glass-card rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white flex flex-col bg-white">
+                        <div class="relative h-72 sm:h-80 overflow-hidden bg-slate-100">
+                            <img src="https://i.ibb.co/qY8pCDnp/tk-large-tube-jpg.jpg" alt="น้ำแข็งหลอดใหญ่" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="py-6 px-4 text-center">
+                            <h3 class="text-2xl font-bold text-slate-800">น้ำแข็งหลอดใหญ่</h3>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white flex flex-col bg-white">
+                        <div class="relative h-72 sm:h-80 overflow-hidden bg-slate-100">
+                            <img src="https://i.ibb.co/bMqKBmFJ/tk-small-tube-jpg.jpg" alt="น้ำแข็งหลอดเล็ก" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="py-6 px-4 text-center">
+                            <h3 class="text-2xl font-bold text-slate-800">น้ำแข็งหลอดเล็ก</h3>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white flex flex-col bg-white">
+                        <div class="relative h-72 sm:h-80 overflow-hidden bg-slate-100">
+                            <img src="https://i.ibb.co/DffVX5fX/tk-crushed-jpg.jpg" alt="น้ำแข็งบด" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="py-6 px-4 text-center">
+                            <h3 class="text-2xl font-bold text-slate-800">น้ำแข็งบด</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-20 bg-white relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-6">
+                        <div class="relative rounded-3xl overflow-hidden shadow-xl border-4 border-slate-100 bg-slate-100">
+                            <img src="https://i.ibb.co/6RzVT4Gc/tk-about-jpg.jpg" alt="โรงงานผลิตน้ำแข็ง T.K.ICE" class="w-full h-[400px] object-cover">
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-6 space-y-6">
+                        <span class="text-ice-600 font-semibold tracking-wider uppercase text-sm">About T.K.ICE</span>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">โรงน้ำแข็ง ทีเคไอซ์ (T.K.ICE)</h2>
+                        <p class="text-slate-600 leading-relaxed">
+                            <strong class="text-slate-800">บริษัท ที.เค. ไอซ์ จำกัด</strong> มุ่งเน้นเรื่องคุณภาพ ความสะอาด และความปลอดภัยของผู้บริโภคเป็นสำคัญ ด้วยกระบวนการผลิตผ่านเครื่องจักรอันทันสมัย ควบคุมอุณหภูมิและระบบกรองบริสุทธิ์ พร้อมทีมงานมืออาชีพ เพื่อส่งมอบผลิตภัณฑ์น้ำแข็งที่ตอบโจทย์ทุกความต้องการของลูกค้า
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-ice-500 text-xl"></i>
+                                <span class="font-medium text-slate-700">มาตรฐาน GMP Codex</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-ice-500 text-xl"></i>
+                                <span class="font-medium text-slate-700">ตรวจวิเคราะห์คุณภาพประจำเดือน</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-ice-500 text-xl"></i>
+                                <span class="font-medium text-slate-700">ขนส่งด้วยรถห้องเย็นไร้ฝุ่น</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-ice-500 text-xl"></i>
+                                <span class="font-medium text-slate-700">บริการเป็นกันเอง รวดเร็ว</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 ice-gradient-bg relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-12">
+                    <h2 class="text-3xl font-extrabold text-slate-900">ติดต่อเรา / แผนที่โรงงาน</h2>
+                    <p class="text-slate-600 mt-2">ยินดีให้บริการสั่งซื้อน้ำแข็ง หรือสอบถามข้อมูลเพิ่มเติมได้ตลอดเวลา</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="p-5 rounded-2xl glass-card flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-ice-500 text-white flex items-center justify-center text-xl shrink-0 shadow-md">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-medium">เบอร์โทรศัพท์ติดต่อ</p>
+                                <p class="text-base font-bold text-slate-800 mt-0.5">
+                                    <a href="tel:0836739953" class="hover:text-ice-600">083-6739953</a>, 
+                                    <a href="tel:0826057867" class="hover:text-ice-600">082-6057867</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <a href="https://www.facebook.com/people/%E0%B9%82%E0%B8%A3%E0%B8%87%E0%B9%89%E0%B8%B3%E0%B9%81%E0%B8%82%E0%B9%87%E0%B8%87-%E0%B8%97%E0%B8%B5%E0%B9%80%E0%B8%82%E0%B9%84%E0%B8%AD%E0%B8%8B%E0%B9%8C/100083204938641/" 
+                           target="_blank" 
+                           class="p-5 rounded-2xl glass-card flex items-center gap-4 hover:border-blue-400 transition-all block group">
+                            <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs text-slate-500 font-medium">Facebook</p>
+                                <p class="text-base font-bold text-slate-800 group-hover:text-blue-600 transition-colors">โรงน้ำแข็ง ทีเคไอซ์</p>
+                            </div>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+                        </a>
+
+                        <div class="p-5 rounded-2xl glass-card flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl shrink-0 shadow-md">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-medium">ที่อยู่โรงงาน</p>
+                                <p class="text-sm font-semibold text-slate-800 mt-1 leading-relaxed">
+                                    369 หมู่ที่ 1 ต.หนองโน อ.เมืองมหาสารคาม จ.มหาสารคาม 44000
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 glass-card p-3 rounded-3xl relative overflow-hidden shadow-lg h-[360px] flex flex-col">
+                        <div class="w-full h-full rounded-2xl overflow-hidden relative">
+                            <iframe 
+                                src="https://maps.google.com/maps?q=369%20หมู่ที่%201%20ตำบลหนองโน%20อำเภอเมืองมหาสารคาม%20จังหวัดมหาสารคาม&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+                                width="100%" 
+                                height="100%" 
+                                style="border:0;" 
+                                allowfullscreen="" 
+                                loading="lazy">
+                            </iframe>
+                            <a href="https://maps.app.goo.gl/kCUGTxVotdHYu8qA7" target="_blank" class="absolute bottom-3 right-3 px-4 py-2 bg-white/95 backdrop-blur-md rounded-xl text-slate-700 font-semibold text-xs shadow-md hover:bg-white hover:text-ice-600 flex items-center gap-2 transition-all">
+                                <span>เปิดใน Google Maps</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-white border-t border-slate-200 py-8 text-center text-slate-500 text-sm">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-cubes text-ice-500"></i>
+                    <span class="font-bold text-slate-700">T.K.ICE</span>
+                    <span>- บริษัท ที.เค. ไอซ์ จำกัด</span>
+                </div>
+                <p>© 2026 T.K.ICE. All rights reserved.</p>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!--  2. ส่วนระบบแดชบอร์ดหลัก (MANAGEMENT CENTER - 6 MODULES INTEGRATED)           -->
+    <!-- ========================================================================= -->
+    <div id="dashboard-view" class="hidden min-h-screen w-full bg-[#f0f9ff] text-slate-800 flex flex-col md:flex-row">
+        
+        <!-- SIDEBAR: แถบสีฟ้าสดใส ขยายกว้างพิเศษ 320px (w-80) ไม่ตกบรรทัด -->
+        <aside class="w-full md:w-80 sidebar-bright-gradient text-white flex flex-col justify-between shrink-0 shadow-2xl z-20 border-r border-sky-300">
+            <div>
+                <!-- Brand Logo ใน Sidebar -->
+                <div class="p-6 flex items-center gap-3.5 border-b border-white/20">
+                    <div class="w-12 h-12 rounded-2xl bg-white/25 backdrop-blur-md flex items-center justify-center text-white text-2xl shadow-md border border-white/40">
+                        <i class="fa-solid fa-snowflake"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-black text-2xl tracking-wider leading-none text-white drop-shadow-sm">T.K.ICE</h2>
+                        <span class="text-[11px] tracking-widest uppercase font-semibold text-sky-100">Management Center</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Sidebar -->
+                <nav class="p-4 space-y-2 font-medium text-sm">
+                    <button onclick="switchDashboardTab('overview')" id="nav-tab-overview" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-white text-sky-700 font-bold shadow-md shadow-sky-900/10 transition-all whitespace-nowrap text-left cursor-pointer">
+                        <i class="fa-solid fa-chart-line text-lg w-6 text-center text-sky-600"></i>
+                        <span>ภาพรวมกิจการ</span>
+                    </button>
+
+                    <button onclick="switchDashboardTab('production')" id="nav-tab-production" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-white hover:bg-white/20 transition-all whitespace-nowrap text-left cursor-pointer font-medium">
+                        <i class="fa-solid fa-industry text-lg w-6 text-center text-sky-100"></i>
+                        <span>การผลิตและคุณภาพ</span>
+                    </button>
+
+                    <button onclick="switchDashboardTab('energy')" id="nav-tab-energy" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-white hover:bg-white/20 transition-all whitespace-nowrap text-left cursor-pointer font-medium">
+                        <i class="fa-solid fa-bolt text-lg w-6 text-center text-amber-200"></i>
+                        <span>พลังงาน & IoT Sub-Meter</span>
+                    </button>
+
+                    <button onclick="switchDashboardTab('delivery')" id="nav-tab-delivery" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-white hover:bg-white/20 transition-all whitespace-nowrap text-left cursor-pointer font-medium">
+                        <i class="fa-solid fa-truck-fast text-lg w-6 text-center text-sky-100"></i>
+                        <span>การจัดส่งและ Fleet GPS</span>
+                    </button>
+
+                    <button onclick="switchDashboardTab('sales')" id="nav-tab-sales" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-white hover:bg-white/20 transition-all whitespace-nowrap text-left cursor-pointer font-medium">
+                        <i class="fa-solid fa-cart-shopping text-lg w-6 text-center text-sky-100"></i>
+                        <span>ยอดขายและลูกค้า</span>
+                    </button>
+
+                    <button onclick="switchDashboardTab('hr')" id="nav-tab-hr" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-white hover:bg-white/20 transition-all whitespace-nowrap text-left cursor-pointer font-medium">
+                        <i class="fa-solid fa-wallet text-lg w-6 text-center text-sky-100"></i>
+                        <span>พนักงาน & เงินเดือน</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- ปุ่มออกจากระบบ -->
+            <div class="p-4 border-t border-white/20">
+                <button onclick="openLogoutModal()" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/10 hover:bg-rose-500 text-white font-semibold text-sm transition-all shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD CONTENT AREA -->
+        <main class="flex-1 flex flex-col overflow-y-auto bg-[#f8fbfe]">
+            
+            <!-- Dashboard Top Header Bar -->
+            <header class="h-20 bg-white border-b border-sky-100 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+                <div class="flex items-center gap-3">
+                    <span class="text-sky-700 font-extrabold text-base">T.K.ICE</span> 
+                    <span class="text-slate-300">|</span> 
+                    <span id="current-tab-title" class="text-slate-700 font-bold text-sm">ภาพรวมกิจการ</span>
+                    <span class="hidden md:inline-block text-[11px] bg-sky-50 text-sky-600 px-2.5 py-0.5 rounded-full font-medium border border-sky-100">Smart Factory v3.2</span>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-mono text-slate-700">
+                        <i class="fa-regular fa-clock text-sky-600"></i>
+                        <span id="global-dashboard-clock">00:00:00 น.</span>
+                    </div>
+
+                    <!-- Profile Pill -->
+                    <div class="flex items-center gap-3 bg-sky-50 border border-sky-200/80 py-1.5 px-4 rounded-full shadow-xs">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-500 to-ice-400 text-white flex items-center justify-center text-sm shadow">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="text-left text-xs">
+                            <p class="font-bold text-slate-800 leading-tight">ผู้บริหาร</p>
+                            <p class="text-[10px] text-sky-600 font-medium">Administrator</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content Container -->
+            <div class="p-4 sm:p-6 lg:p-8 space-y-6 flex-1">
+
+                <!-- ============================================================== -->
+                <!--  MODULE A: ภาพรวมกิจการ (OVERVIEW)                              -->
+                <!-- ============================================================== -->
+                <div id="tab-content-overview" class="space-y-8">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">ภาพรวมกิจการ</h1>
+                            <p class="text-xs sm:text-sm text-slate-500 mt-1">ข้อมูลสถิติและสถานะการดำเนินงานของโรงงานแบบเรียลไทม์</p>
+                        </div>
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-sky-200 text-xs font-semibold text-slate-600 shadow-xs">
+                            <i class="fa-regular fa-calendar text-sky-500 text-sm"></i>
+                            <span>วันที่ 4 ตุลาคม 2026</span>
+                        </div>
+                    </div>
+
+                    <!-- 4 สถิติหลัก -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <div onclick="switchDashboardTab('production')" class="bg-white border border-sky-100 p-6 rounded-3xl shadow-xs hover:shadow-md hover:border-sky-300 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ผลิตวันนี้</span>
+                                <div class="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg border border-sky-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-industry"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-800 tracking-tight">3,850</span>
+                                    <span class="text-sm font-bold text-slate-500">ถุง</span>
+                                </div>
+                                <div class="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold">
+                                    <i class="fa-solid fa-arrow-trend-up"></i>
+                                    <span>+12% จากเมื่อวาน</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div onclick="switchDashboardTab('sales')" class="bg-white border border-sky-100 p-6 rounded-3xl shadow-xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ยอดขายวันนี้</span>
+                                <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg border border-emerald-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-800 tracking-tight">58,420</span>
+                                    <span class="text-sm font-bold text-slate-500">บาท</span>
+                                </div>
+                                <div class="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold">
+                                    <i class="fa-solid fa-arrow-trend-up"></i>
+                                    <span>+8% จากเป้าหมาย</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div onclick="switchDashboardTab('energy')" class="bg-white border border-sky-100 p-6 rounded-3xl shadow-xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ค่าไฟวันนี้</span>
+                                <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg border border-amber-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-800 tracking-tight">8,240</span>
+                                    <span class="text-sm font-bold text-slate-500">บาท</span>
+                                </div>
+                                <div class="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">
+                                    <i class="fa-solid fa-arrow-trend-down text-emerald-500"></i>
+                                    <span>-5% ประหยัดขึ้น</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div onclick="switchDashboardTab('delivery')" class="bg-white border border-sky-100 p-6 rounded-3xl shadow-xs hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">รถกำลังส่ง</span>
+                                <div class="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg border border-sky-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-truck-fast"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-800 tracking-tight">4 / 6</span>
+                                    <span class="text-sm font-bold text-slate-500">คัน</span>
+                                </div>
+                                <div class="mt-3 inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-sky-50 text-sky-600 text-xs font-bold">
+                                    <span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+                                    <span>กำลังดำเนินการ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- เมนูลัดเข้าสู่ระบบย่อย -->
+                    <div class="space-y-4">
+                        <h3 class="text-base font-bold text-slate-800 tracking-wide">เมนูลัดเข้าสู่ระบบย่อย</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <div onclick="switchDashboardTab('production')" class="bg-white border border-sky-100 hover:border-sky-400 p-6 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer group hover:-translate-y-1.5 transition-all shadow-xs hover:shadow-md">
+                                <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl group-hover:bg-sky-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-industry"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 group-hover:text-sky-600 transition-colors">การผลิต</span>
+                            </div>
+
+                            <div onclick="switchDashboardTab('energy')" class="bg-white border border-sky-100 hover:border-amber-400 p-6 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer group hover:-translate-y-1.5 transition-all shadow-xs hover:shadow-md">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 group-hover:text-amber-600 transition-colors">IoT Sub-Meter</span>
+                            </div>
+
+                            <div onclick="switchDashboardTab('delivery')" class="bg-white border border-sky-100 hover:border-sky-400 p-6 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer group hover:-translate-y-1.5 transition-all shadow-xs hover:shadow-md">
+                                <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl group-hover:bg-sky-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-truck"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 group-hover:text-sky-600 transition-colors">ขนส่ง GPS</span>
+                            </div>
+
+                            <div onclick="switchDashboardTab('sales')" class="bg-white border border-sky-100 hover:border-emerald-400 p-6 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer group hover:-translate-y-1.5 transition-all shadow-xs hover:shadow-md">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">ยอดขาย</span>
+                            </div>
+
+                            <div onclick="switchDashboardTab('hr')" class="bg-white border border-sky-100 hover:border-purple-400 p-6 rounded-3xl flex flex-col items-center justify-center gap-3 cursor-pointer group hover:-translate-y-1.5 transition-all shadow-xs hover:shadow-md">
+                                <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-wallet"></i>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700 group-hover:text-purple-600 transition-colors">เงินเดือน</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ============================================================== -->
+                <!--  MODULE B: การผลิตและคุณภาพ (PRODUCTION & QC)                  -->
+                <!-- ============================================================== -->
+                <div id="tab-content-production" class="hidden space-y-6">
+                    <div class="bg-gradient-to-r from-teal-700 via-sky-600 to-blue-700 text-white rounded-3xl p-6 shadow-md relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <span class="inline-flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-md">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> OEE & IoT Production Tracking
+                            </span>
+                            <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">การผลิตและควบคุมคุณภาพ</h2>
+                            <p class="text-sky-100 text-xs sm:text-sm">ติดตามกระบวนการผลิตน้ำแข็ง ประสิทธิภาพเครื่องจักร OEE และแผนออเดอร์จัดส่ง</p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="openTomorrowModal()" class="bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition cursor-pointer">
+                                + สั่งออเดอร์ล่วงหน้า (พรุ่งนี้)
+                            </button>
+                            <button onclick="openAddLogModal()" class="bg-white text-teal-900 hover:bg-teal-50 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition cursor-pointer">
+                                + บันทึกยอดผลิตวันนี้
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sub-view Today -->
+                    <div id="prod-today-view" class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-xs">
+                                <p class="text-xs text-slate-500">ยอดออเดอร์ทั้งหมด (วันนี้)</p>
+                                <h3 class="text-2xl font-bold text-slate-900 mt-1">1,250 <span class="text-xs font-normal text-slate-500">กระสอบ</span></h3>
+                                <p class="text-[11px] text-blue-600 mt-1 font-semibold">12 รายการสั่งซื้อ</p>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-xs">
+                                <p class="text-xs text-slate-500">กำลังผลิตอยู่</p>
+                                <h3 class="text-2xl font-bold text-blue-600 mt-1">820 <span class="text-xs font-normal text-slate-500">กระสอบ</span></h3>
+                                <p class="text-[11px] text-slate-400 mt-1">เดินเครื่อง 3 ไลน์หลัก (65.6%)</p>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-xs">
+                                <p class="text-xs text-slate-500">ผลิตเสร็จแล้ว</p>
+                                <h3 class="text-2xl font-bold text-emerald-600 mt-1">430 <span class="text-xs font-normal text-slate-500">กระสอบ</span></h3>
+                                <p class="text-[11px] text-emerald-600 mt-1 font-semibold">เข้าห้องเย็นพร้อมจัดส่ง</p>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-xs">
+                                <p class="text-xs text-slate-500">คงเหลือที่ต้องผลิต</p>
+                                <h3 class="text-2xl font-bold text-slate-800 mt-1">0 <span class="text-xs font-normal text-slate-500">กระสอบ</span></h3>
+                                <p class="text-[11px] text-emerald-600 mt-1 font-semibold">✓ ครบตามแผนการผลิต</p>
+                            </div>
+                        </div>
+
+                        <!-- 5 เครื่องจักรผลิต -->
+                        <div class="bg-white rounded-3xl border border-sky-100 p-6 shadow-xs space-y-4">
+                            <h3 class="text-base font-bold text-slate-900">สถานะเครื่องจักรผลิตน้ำแข็งและระบบเสริม (คลิกดูเซนเซอร์ IoT)</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                                <div onclick="openMachineModal('m60')" class="bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-2xl p-4 cursor-pointer transition">
+                                    <div class="flex justify-between items-center mb-1"><span class="font-bold text-xs">เครื่องผลิต 60 ตัน</span><span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">ปกติ</span></div>
+                                    <p class="text-[11px] text-slate-500 mt-1">กำลังผลิต: 2,000 ถุง/วัน</p>
+                                    <p class="text-[11px] text-slate-500">อุณหภูมิ: -12.4 °C</p>
+                                </div>
+                                <div onclick="openMachineModal('m50_1')" class="bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-2xl p-4 cursor-pointer transition">
+                                    <div class="flex justify-between items-center mb-1"><span class="font-bold text-xs">เครื่องผลิต 50 ตัน (1)</span><span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">ปกติ</span></div>
+                                    <p class="text-[11px] text-slate-500 mt-1">กำลังผลิต: 1,500 ถุง/วัน</p>
+                                    <p class="text-[11px] text-slate-500">อุณหภูมิ: -11.8 °C</p>
+                                </div>
+                                <div onclick="openMachineModal('cooling')" class="bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-2xl p-4 cursor-pointer transition">
+                                    <div class="flex justify-between items-center mb-1"><span class="font-bold text-xs">Cooling Tower</span><span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">ปกติ</span></div>
+                                    <p class="text-[11px] text-slate-500 mt-1">น้ำเข้า: 28.2 °C</p>
+                                    <p class="text-[11px] text-slate-500">น้ำออก: 24.5 °C</p>
+                                </div>
+                                <div onclick="openMachineModal('ro')" class="bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-2xl p-4 cursor-pointer transition">
+                                    <div class="flex justify-between items-center mb-1"><span class="font-bold text-xs">ระบบกรอง RO</span><span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">ปกติ</span></div>
+                                    <p class="text-[11px] text-slate-500 mt-1">แรงดัน: 4.2 bar</p>
+                                    <p class="text-[11px] text-slate-500">TDS: 12 ppm</p>
+                                </div>
+                                <div onclick="openMachineModal('comp3')" class="bg-amber-50/80 hover:bg-amber-100 border border-amber-300 rounded-2xl p-4 cursor-pointer transition">
+                                    <div class="flex justify-between items-center mb-1"><span class="font-bold text-xs text-amber-900">คอมเพรสเซอร์ 3</span><span class="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold animate-pulse">เฝ้าระวัง</span></div>
+                                    <p class="text-[11px] text-amber-900 mt-1">อุณหภูมิน้ำมัน: 78.5 °C ↑</p>
+                                    <p class="text-[11px] text-slate-600">แรงดันดูด: 2.1 bar</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="bg-white rounded-3xl border border-sky-100 p-6 shadow-xs space-y-4">
+                            <h3 class="text-base font-bold text-slate-900">รายการสั่งผลิตจากออเดอร์ประจำวันนี้</h3>
+                            <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                                <table class="w-full text-left text-xs sm:text-sm">
+                                    <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                        <tr>
+                                            <th class="py-3 px-4 text-center w-14">ลำดับ</th>
+                                            <th class="py-3 px-4">ลูกค้า / ร้านค้า</th>
+                                            <th class="py-3 px-4">สินค้า</th>
+                                            <th class="py-3 px-4 text-right">จำนวน (กระสอบ)</th>
+                                            <th class="py-3 px-4 text-center">สถานะ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 font-medium">
+                                        <tr>
+                                            <td class="py-3 px-4 text-center text-slate-400">1</td>
+                                            <td class="py-3 px-4 font-bold">ร้านขวัญใจ</td>
+                                            <td class="py-3 px-4">น้ำแข็งหลอด (เล็ก)</td>
+                                            <td class="py-3 px-4 text-right font-bold text-slate-900">420</td>
+                                            <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">✓ ผลิตเสร็จแล้ว</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 px-4 text-center text-slate-400">2</td>
+                                            <td class="py-3 px-4 font-bold">ร้านพิกุลกอล์ฟ</td>
+                                            <td class="py-3 px-4">น้ำแข็งหลอด (ใหญ่)</td>
+                                            <td class="py-3 px-4 text-right font-bold text-slate-900">380</td>
+                                            <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">✓ ผลิตเสร็จแล้ว</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 px-4 text-center text-slate-400">3</td>
+                                            <td class="py-3 px-4 font-bold">ร้านแม่ต๋อย</td>
+                                            <td class="py-3 px-4">น้ำแข็งก้อน</td>
+                                            <td class="py-3 px-4 text-right font-bold text-slate-900">450</td>
+                                            <td class="py-3 px-4 text-center"><span class="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">กำลังผลิต</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ============================================================== -->
+                <!--  MODULE C: พลังงาน & IOT SUB-METER (ฉบับเต็ม 100% จากไฟล์ของคุณ)   -->
+                <!-- ============================================================== -->
+                <div id="tab-content-energy" class="hidden space-y-6">
+                    
+                    <!-- Energy Header Bar พร้อมปฏิทินย้อนหลังอัจฉริยะ -->
+                    <div class="bg-white rounded-2xl border border-sky-100 p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-sky-500 rounded-xl flex items-center justify-center text-white shadow-md">
+                                <i class="fa-solid fa-bolt text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800 leading-tight">ระบบติดตามพลังงาน / IoT ควบคุมต้นทุนการผลิตแบบเรียลไทม์</h2>
+                                <p class="text-xs text-slate-500">ติดตามค่าไฟฟ้าและสมรรถนะการใช้พลังงาน 7 จุด Sub-meter</p>
+                            </div>
+                        </div>
+
+                        <!-- Data Period Selector: Custom Calendar -->
+                        <div class="flex items-center gap-3">
+                            <div class="relative" id="calendar-root">
+                                <button type="button" id="date-picker-wrap" onclick="toggleCalendar(event)" class="flex items-center gap-2 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs hover:border-blue-400 transition-colors cursor-pointer" title="คลิกเพื่อเลือกวันที่ย้อนหลัง">
+                                    <i class="fa-regular fa-calendar-alt text-blue-600 text-sm"></i>
+                                    <span id="date-display" class="text-xs font-bold text-slate-700">02/10/2026</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                                </button>
+                                
+                                <div id="calendar-panel" class="hidden absolute right-0 top-full mt-2 w-[310px] bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <button type="button" onclick="calendarMove(-1,event)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 cursor-pointer"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                        <div id="calendar-title" class="font-bold text-slate-800 text-xs"></div>
+                                        <button type="button" onclick="calendarMove(1,event)" id="calendar-next" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 cursor-pointer"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                    </div>
+                                    <div class="grid grid-cols-7 text-center text-[10px] font-semibold text-slate-400 mb-1">
+                                        <span>อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span>
+                                    </div>
+                                    <div id="calendar-days" class="grid grid-cols-7 gap-1"></div>
+                                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
+                                        <button type="button" onclick="calendarToday(event)" class="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer">วันนี้</button>
+                                        <span class="text-[10px] text-slate-400">เลือกวันเพื่อดูย้อนหลัง</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4 การ์ดสถิติพลังงานหลัก -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        
+                        <!-- Energy Today -->
+                        <div class="bg-white border-l-4 border-emerald-500 rounded-2xl p-5 shadow-xs flex items-center justify-between">
+                            <div>
+                                <h3 class="text-slate-500 font-medium text-xs mb-1" id="label-energy-period">การใช้ไฟรวมวันนี้</h3>
+                                <div class="flex items-baseline gap-2">
+                                    <h2 class="text-3xl font-extrabold text-slate-800 data-transition" id="kpi-kwh">1,824</h2>
+                                    <span class="text-slate-500 font-medium text-xs">kWh</span>
+                                </div>
+                                <p class="mt-1 text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-caret-down"></i> 6% จากเมื่อวาน
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 text-xl shadow-xs">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                        </div>
+
+                        <!-- Cost Today -->
+                        <div class="bg-white border-l-4 border-amber-500 rounded-2xl p-5 shadow-xs flex items-center justify-between">
+                            <div>
+                                <h3 class="text-slate-500 font-medium text-xs mb-1" id="label-cost-period">ค่าไฟวันนี้ (ประมาณการ)</h3>
+                                <div class="flex items-baseline gap-2">
+                                    <h2 class="text-3xl font-extrabold text-slate-800 data-transition" id="kpi-thb">8,240</h2>
+                                    <span class="text-slate-500 font-medium text-xs">บาท</span>
+                                </div>
+                                <p class="mt-1 text-xs font-semibold text-slate-500">ใช้ไฟ <span id="kpi-cost-kwh" class="text-slate-700 font-bold">1,824</span> หน่วย (kWh)</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 text-xl shadow-xs">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                        </div>
+
+                        <!-- Peak Demand -->
+                        <div class="bg-white border-l-4 border-rose-500 rounded-2xl p-5 shadow-xs flex items-center justify-between">
+                            <div>
+                                <h3 class="text-slate-500 font-medium text-xs mb-1" id="label-peak-period">Peak Demand วันนี้</h3>
+                                <div class="flex items-baseline gap-2">
+                                    <h2 class="text-3xl font-extrabold text-slate-800 data-transition" id="kpi-peak">185</h2>
+                                    <span class="text-slate-500 font-medium text-xs">kW</span>
+                                </div>
+                                <p class="mt-1 text-xs font-semibold text-rose-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-caret-up"></i> 12% จากเมื่อวาน
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 text-xl shadow-xs">
+                                <i class="fa-solid fa-gauge-high"></i>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Accumulation -->
+                        <div class="bg-white border-l-4 border-blue-600 rounded-2xl p-5 shadow-xs flex items-center justify-between">
+                            <div class="w-full pr-3">
+                                <h3 class="text-slate-500 font-medium text-xs mb-1">ยอดสะสมเดือนนี้</h3>
+                                <div class="flex items-baseline gap-2 mb-1">
+                                    <h2 class="text-2xl font-black text-blue-700 data-transition" id="kpi-month">198,431</h2>
+                                    <span class="text-slate-500 font-semibold text-xs">บาท</span>
+                                </div>
+                                <div class="flex items-baseline gap-1.5 mb-1.5 text-slate-500">
+                                    <span class="text-[10px]">ใช้ไฟสะสม</span>
+                                    <span class="text-xs font-bold text-slate-700 data-transition" id="kpi-month-kwh">44,096</span>
+                                    <span class="text-[10px]">หน่วย</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full data-transition" id="kpi-month-bar" style="width: 71%"></div>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 text-xl shadow-xs shrink-0">
+                                <i class="fa-solid fa-money-check-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- สถานะพลังงานภาพรวมโรงงาน -->
+                    <div class="bg-white rounded-2xl border border-sky-100 p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div id="overall-status-icon" class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-xs">
+                                <i class="fa-solid fa-shield-halved text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-slate-400">สถานะพลังงานภาพรวมของโรงงาน</p>
+                                <p id="overall-status" class="font-bold text-emerald-700 text-sm">ระบบโดยรวม: ปกติ</p>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">ติดตาม 7 จุด Sub-meter • อัปเดตแบบ Real-time Telemetry</div>
+                    </div>
+
+                    <!-- 7 จุด Sub-meter Real-time Cards -->
+                    <div class="bg-white rounded-3xl p-6 shadow-xs border border-sky-100 space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-3">
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-microchip text-blue-500"></i> การใช้พลังงานแยกตามจุด Sub-meter (Real-time)
+                                </h2>
+                                <p class="text-slate-500 text-xs mt-0.5">ตรวจสอบการกินไฟและต้นทุนแบบเจาะจงรายเครื่องจักรทั้ง 7 จุด</p>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs text-slate-600 font-semibold self-start">
+                                <span class="relative flex h-2.5 w-2.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
+                                <span>สถานะเครือข่าย: ปกติ</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3" id="submeters-container"></div>
+                    </div>
+
+                    <!-- กราฟแนวโน้ม (Mixed Chart) & สัดส่วนพลังงาน (Donut Chart) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                        <!-- Mixed Chart -->
+                        <div class="bg-white border border-sky-100 rounded-3xl p-6 shadow-xs lg:col-span-8 flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-bold text-slate-800">แนวโน้มการใช้พลังงานและ Peak Demand</h3>
+                                <div class="flex bg-slate-100 rounded-xl p-1">
+                                    <button id="btn-chart-hourly" onclick="toggleMixedChart('hourly')" class="px-3 py-1 text-xs font-semibold bg-white text-blue-600 shadow-xs rounded-lg transition-all cursor-pointer">รายชั่วโมง</button>
+                                    <button id="btn-chart-daily" onclick="toggleMixedChart('daily')" class="px-3 py-1 text-xs font-semibold text-slate-500 hover:text-slate-700 rounded-lg transition-all cursor-pointer">รายวัน</button>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 mb-2 text-[11px] font-medium text-slate-500 justify-center">
+                                <span class="flex items-center gap-1"><div class="w-3 h-3 bg-blue-500 rounded-xs"></div> วันที่เลือก (kWh)</span>
+                                <span class="flex items-center gap-1"><div class="w-3 h-3 bg-slate-300 rounded-xs"></div> อดีตเปรียบเทียบ (kWh)</span>
+                                <span class="flex items-center gap-1"><div class="w-3 h-3 bg-rose-500 rounded-full"></div> Peak Demand (kW)</span>
+                            </div>
+                            <div class="relative min-h-[290px]">
+                                <canvas id="mixedChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Donut Chart -->
+                        <div class="bg-white border border-sky-100 rounded-3xl p-6 shadow-xs lg:col-span-4 flex flex-col justify-between">
+                            <h3 class="text-sm font-bold text-slate-800 mb-2">สัดส่วนการใช้พลังงาน</h3>
+                            <div class="relative h-44 flex justify-center items-center mt-2">
+                                <canvas id="donutChart"></canvas>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
+                                    <span class="text-xl font-black text-slate-800 data-transition" id="center-donut-val">1,824</span>
+                                    <span class="text-[10px] text-slate-400 font-bold">kWh</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 grid grid-cols-1 gap-1.5 text-xs h-32 overflow-y-auto pr-1" id="donut-legend"></div>
+                        </div>
+                    </div>
+
+                    <!-- ประวัติค่าไฟฟ้า (History Cost) & ตารางรายการแจ้งเตือน (Alerts Table) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <!-- History Chart -->
+                        <div class="bg-white border border-sky-100 rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-3">
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800">ประวัติค่าไฟฟ้า (บาท)</h3>
+                                    <p class="text-[10px] text-slate-400">เปรียบเทียบข้อมูลปัจจุบันกับอดีต</p>
+                                </div>
+                                <select id="history-selector" onchange="changeHistoryPeriod()" class="bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none cursor-pointer">
+                                    <option value="daily">รายวัน (7 วันล่าสุด)</option>
+                                    <option value="weekly">รายสัปดาห์ (เดือนนี้)</option>
+                                    <option value="monthly" selected>รายเดือน (ปีนี้)</option>
+                                </select>
+                            </div>
+                            <div class="relative min-h-[220px]">
+                                <canvas id="historyChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Alerts Table -->
+                        <div class="bg-white border border-sky-100 rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-bell text-rose-500"></i> รายการแจ้งเตือนสถานะ
+                                </h3>
+                                <span class="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded-md">อัปเดตล่าสุด: <span id="alert-time">10:24</span></span>
+                            </div>
+                            <div class="overflow-x-auto rounded-2xl border border-slate-100">
+                                <table class="w-full text-left text-xs whitespace-nowrap">
+                                    <thead class="bg-slate-50 text-slate-500 border-b">
+                                        <tr>
+                                            <th class="px-3 py-2">เวลา</th>
+                                            <th class="px-3 py-2">จุดติดตั้ง</th>
+                                            <th class="px-3 py-2">รายละเอียดปัญหา</th>
+                                            <th class="px-3 py-2 text-center">สถานะ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="alerts-tbody" class="divide-y divide-slate-100 text-slate-700 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations Banner (ข้อเสนอแนะจากระบบ) -->
+                    <div class="bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-3xl p-6 shadow-xs flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+                        <div class="shrink-0">
+                            <h3 class="text-sm font-bold text-blue-900 flex items-center gap-2">
+                                <i class="fa-solid fa-lightbulb text-amber-500 text-lg"></i> ข้อเสนอแนะจากระบบ
+                            </h3>
+                            <p class="text-[11px] text-blue-600 mt-0.5">วิเคราะห์โดย AI อัตโนมัติ</p>
+                        </div>
+                        
+                        <ul class="grid grid-cols-1 md:grid-cols-3 gap-3 flex-grow text-xs">
+                            <li class="flex items-start gap-3 bg-white p-3.5 rounded-2xl border border-sky-100 shadow-2xs">
+                                <div class="text-emerald-500 text-lg"><i class="fa-solid fa-circle-check"></i></div>
+                                <div>
+                                    <p class="font-bold text-slate-800" id="rec-usage-title">การใช้ไฟอยู่ในระดับปกติ</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5" id="rec-usage-detail">ระบบกำลังติดตามการใช้พลังงานแบบต่อเนื่อง</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3 bg-white p-3.5 rounded-2xl border border-sky-100 shadow-2xs">
+                                <div class="text-rose-500 text-lg"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                                <div>
+                                    <p class="font-bold text-slate-800" id="rec-peak-title">Peak Demand อยู่ในเกณฑ์เฝ้าระวัง</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5" id="rec-peak-detail">ระบบจะสร้างคำเตือนเมื่อโหลดรวมสูงเกินเกณฑ์จำลอง</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3 bg-white p-3.5 rounded-2xl border border-sky-100 shadow-2xs">
+                                <div class="text-amber-500 text-lg"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                                <div>
+                                    <p class="font-bold text-slate-800" id="rec-machine-title">สถานะเครื่องจักรโดยรวมปกติ</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5" id="rec-machine-detail">ระบบกำลังตรวจจับความผิดปกติของแต่ละจุด Sub-meter</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Energy Alert Detail Modal -->
+                    <div id="alert-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs" onclick="if(event.target===this) closeAlertModal()">
+                        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100">
+                            <div class="px-6 py-4 border-b flex items-center justify-between">
+                                <div>
+                                    <p class="text-[11px] text-slate-400">รายละเอียดการแจ้งเตือนพลังงาน</p>
+                                    <h3 id="modal-title" class="font-bold text-slate-800 text-base">-</h3>
+                                </div>
+                                <button onclick="closeAlertModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <p class="text-slate-400 mb-1">ค่าที่ตรวจพบ</p>
+                                    <p id="modal-detected" class="font-bold text-slate-800 text-sm">-</p>
+                                </div>
+                                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <p class="text-slate-400 mb-1">ผลกระทบด้านต้นทุน</p>
+                                    <p id="modal-cost" class="font-bold text-rose-600 text-sm">-</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="font-bold text-slate-700 mb-1">สาเหตุที่เป็นไปได้</p>
+                                    <p id="modal-cause" class="text-slate-600 leading-relaxed">-</p>
+                                </div>
+                                <div class="md:col-span-2 bg-blue-50 border border-blue-100 rounded-2xl p-4">
+                                    <p class="font-bold text-blue-900 mb-1.5"><i class="fa-solid fa-screwdriver-wrench mr-1.5"></i>แนวทางตรวจสอบและแก้ไข</p>
+                                    <p id="modal-action" class="text-blue-800 leading-relaxed">-</p>
+                                </div>
+                                <div class="md:col-span-2 flex justify-end">
+                                    <button id="modal-machine-btn" class="hidden px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold cursor-pointer" onclick="focusMachineFromModal()">ดูข้อมูลเครื่องนี้</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================================== -->
+                <!--  MODULE D: การจัดส่งและ FLEET GPS (LIVE MAP & TRACKING)         -->
+                <!-- ============================================================== -->
+                <div id="tab-content-delivery" class="hidden space-y-6">
+                    <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-700 rounded-3xl p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs bg-white/20 px-3 py-1 rounded-full font-medium">Google Maps Live Tracking</span>
+                            <h2 class="text-2xl sm:text-3xl font-bold tracking-tight mt-1">การจัดส่งและติดตามตำแหน่งรถ (Fleet GPS)</h2>
+                            <p class="text-sky-100 text-xs sm:text-sm">โรงงาน ต.หนองโน สู่เส้นทางมหาสารคาม (มมส. ขามเรียง - ท่าขอนยาง - เมืองสารคาม)</p>
+                        </div>
+                        <div class="bg-blue-950/60 border border-blue-300/30 px-4 py-2 rounded-2xl flex items-center gap-3">
+                            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+                            <div>
+                                <p class="text-[11px] text-blue-200">สถานะ GPS รถขนส่ง</p>
+                                <p class="text-sm font-bold text-emerald-300">ออนไลน์ 6 / 6 คัน</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-3xl border border-sky-100 p-5 shadow-xs flex flex-col space-y-3">
+                            <div class="flex justify-between items-center flex-wrap gap-2">
+                                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-map-location-dot text-blue-600"></i> แผนที่ติดตามรถสด (จ.มหาสารคาม)
+                                </h3>
+                            </div>
+                            <div class="relative w-full h-[450px] rounded-2xl overflow-hidden border border-slate-200">
+                                <div id="delivery-leaflet-map" class="w-full h-full z-10"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3xl border border-sky-100 p-5 shadow-xs flex flex-col justify-between space-y-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-bars-progress text-sky-600"></i> ความคืบหน้า 6 สายส่งวันนี้
+                                </h3>
+                                <div class="space-y-3 text-xs" id="routes-progress-list">
+                                    <div class="p-2.5 bg-slate-50 rounded-xl space-y-1">
+                                        <div class="flex justify-between font-bold"><span>TK-01 (ขามเรียง-มอนอก)</span><span class="text-emerald-600">8/8 (100%)</span></div>
+                                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div></div>
+                                    </div>
+                                    <div class="p-2.5 bg-slate-50 rounded-xl space-y-1">
+                                        <div class="flex justify-between font-bold"><span>TK-02 (ท่าขอนยาง-หน้าป้าย)</span><span class="text-blue-600">6/7 (86%)</span></div>
+                                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-2 rounded-full" style="width: 86%"></div></div>
+                                    </div>
+                                    <div class="p-2.5 bg-slate-50 rounded-xl space-y-1">
+                                        <div class="flex justify-between font-bold"><span>TK-03 (เมืองสารคาม-ตลาดสด)</span><span class="text-blue-600">6/8 (75%)</span></div>
+                                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div></div>
+                                    </div>
+                                    <div class="p-2.5 bg-slate-50 rounded-xl space-y-1">
+                                        <div class="flex justify-between font-bold"><span>TK-04 (ขามเรียง-มะกอก)</span><span class="text-blue-600">4/6 (67%)</span></div>
+                                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-2 rounded-full" style="width: 67%"></div></div>
+                                    </div>
+                                    <div class="p-2.5 bg-slate-50 rounded-xl space-y-1">
+                                        <div class="flex justify-between font-bold"><span>TK-05 (ท่าขอนยาง-บขส.)</span><span class="text-emerald-600">5/5 (100%)</span></div>
+                                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div></div>
+                                    </div>
+                                    <div class="p-2.5 bg-slate-50 rounded-xl space-y-1">
+                                        <div class="flex justify-between font-bold"><span>TK-06 (แก้งเลิงจาน)</span><span class="text-amber-600">3/7 (43%)</span></div>
+                                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-amber-500 h-2 rounded-full" style="width: 43%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fleet Table -->
+                    <div class="bg-white rounded-3xl border border-sky-100 p-6 shadow-xs space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base">ตารางสถานะการจัดส่งรายคัน (กดโฟกัสเพื่อซูมแผนที่)</h3>
+                        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                    <tr>
+                                        <th class="py-3 px-4">รหัสรถ</th>
+                                        <th class="py-3 px-4">พนักงานขับรถ</th>
+                                        <th class="py-3 px-4">เส้นทาง</th>
+                                        <th class="py-3 px-4 text-center">ส่งแล้ว</th>
+                                        <th class="py-3 px-4 text-center">สถานะ</th>
+                                        <th class="py-3 px-4 text-center">ตำแหน่ง</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 font-medium">
+                                    <tr>
+                                        <td class="py-3 px-4 font-bold text-blue-700">TK-01</td>
+                                        <td class="py-3 px-4">นายสมชาย ใจดี</td>
+                                        <td class="py-3 px-4">ขามเรียง - มอนอก</td>
+                                        <td class="py-3 px-4 text-center font-bold text-emerald-700">8/8</td>
+                                        <td class="py-3 px-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-xs font-semibold">ส่งเสร็จสิ้น</span></td>
+                                        <td class="py-3 px-4 text-center"><button onclick="focusDeliveryVehicle('TK-01')" class="text-blue-600 hover:underline font-semibold cursor-pointer">โฟกัส 📍</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4 font-bold text-blue-700">TK-02</td>
+                                        <td class="py-3 px-4">นายวิทยา ศรีวงศ์</td>
+                                        <td class="py-3 px-4">ท่าขอนยาง - หน้าป้าย</td>
+                                        <td class="py-3 px-4 text-center font-bold text-blue-700">6/7</td>
+                                        <td class="py-3 px-4 text-center"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-semibold">กำลังส่ง</span></td>
+                                        <td class="py-3 px-4 text-center"><button onclick="focusDeliveryVehicle('TK-02')" class="text-blue-600 hover:underline font-semibold cursor-pointer">โฟกัส 📍</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4 font-bold text-blue-700">TK-03</td>
+                                        <td class="py-3 px-4">นายประสิทธิ์ มีสุข</td>
+                                        <td class="py-3 px-4">เมืองมหาสารคาม - ตลาดสด</td>
+                                        <td class="py-3 px-4 text-center font-bold text-blue-700">6/8</td>
+                                        <td class="py-3 px-4 text-center"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-semibold">กำลังส่ง</span></td>
+                                        <td class="py-3 px-4 text-center"><button onclick="focusDeliveryVehicle('TK-03')" class="text-blue-600 hover:underline font-semibold cursor-pointer">โฟกัส 📍</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ============================================================== -->
+                <!--  MODULE E: ยอดขายและลูกค้า (SALES & CUSTOMERS)                  -->
+                <!-- ============================================================== -->
+                <div id="tab-content-sales" class="hidden space-y-6">
+                    <div class="flex justify-between items-center flex-wrap gap-3">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">ระบบบันทึกและวิเคราะห์ยอดขาย</h2>
+                            <p class="text-xs text-slate-400">อัปเดตออเดอร์ บิลขาย และยอดเก็บเงินเรียลไทม์</p>
+                        </div>
+                        <button onclick="openNewBillModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-plus"></i> บันทึกเปิดบิลขายใหม่
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+                        <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                            <span class="text-xs text-slate-400">ยอดขายวันนี้</span>
+                            <h3 class="text-xl font-bold text-slate-800 mt-1">58,420 ฿</h3>
+                            <span class="text-[10px] text-emerald-600 font-semibold">▲ 12% จากเมื่อวาน</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                            <span class="text-xs text-slate-400">จำนวนขายวันนี้</span>
+                            <h3 class="text-xl font-bold text-slate-800 mt-1">3,850 ถุง</h3>
+                            <span class="text-[10px] text-slate-400">อัปเดตเรียลไทม์</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                            <span class="text-xs text-slate-400">ลูกค้าทั้งหมด</span>
+                            <h3 class="text-xl font-bold text-slate-800 mt-1">128 ร้าน</h3>
+                            <span class="text-[10px] text-sky-600 font-semibold">แอคทีฟ 94%</span>
+                        </div>
+                        <div onclick="openDebtModal()" class="bg-white p-4 rounded-2xl border border-rose-200 shadow-xs cursor-pointer hover:border-rose-400 transition">
+                            <span class="text-xs text-rose-500 font-semibold">ยอดค้างชำระ (คลิก)</span>
+                            <h3 class="text-xl font-bold text-rose-600 mt-1">86,200 ฿</h3>
+                            <span class="text-[10px] text-rose-500 font-semibold">14 ร้านค้าค้างจ่าย</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                            <span class="text-xs text-slate-400">ออร์เดอร์วันนี้</span>
+                            <h3 class="text-xl font-bold text-slate-800 mt-1">35 รายการ</h3>
+                            <span class="text-[10px] text-emerald-600 font-semibold">ส่งแล้ว 28 | รอ 7</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                            <span class="text-xs text-slate-400">สินค้าคงเหลือ</span>
+                            <h3 class="text-xl font-bold text-slate-800 mt-1">1,250 กระสอบ</h3>
+                            <span class="text-[10px] text-emerald-600 font-semibold">พร้อมจัดส่ง</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-7 bg-white rounded-3xl border border-sky-100 p-6 shadow-xs space-y-4">
+                            <div class="flex justify-between items-center pb-2 border-b">
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check text-blue-600"></i> รายการยอดขายล่าสุด (อัปเดตเรียลไทม์)
+                                </h3>
+                                <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Live</span>
+                            </div>
+                            <div class="overflow-x-auto rounded-2xl border border-slate-100">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                        <tr>
+                                            <th class="p-3">เวลา</th>
+                                            <th class="p-3">ลูกค้า / ร้านค้า</th>
+                                            <th class="p-3">สินค้า</th>
+                                            <th class="p-3 text-center">จำนวน</th>
+                                            <th class="p-3 text-right">ยอดเงิน</th>
+                                            <th class="p-3 text-center">การชำระ</th>
+                                            <th class="p-3 text-center">หลักฐาน</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sales-orders-tbody" class="divide-y divide-slate-100 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 space-y-6">
+                            <div class="bg-white rounded-3xl border border-sky-100 p-6 shadow-xs space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="font-bold text-slate-800 text-sm">ยอดขายรายเดือน (30 วัน)</h4>
+                                    <span class="text-xs text-slate-400">ตุลาคม 2569</span>
+                                </div>
+                                <div class="h-60">
+                                    <canvas id="salesBarChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ============================================================== -->
+                <!--  MODULE F: พนักงาน & เงินเดือน (HR & PAYROLL)                  -->
+                <!-- ============================================================== -->
+                <div id="tab-content-hr" class="hidden space-y-6">
+                    <div class="flex justify-between items-center flex-wrap gap-3">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">ระบบบริหารจัดการพนักงานและเงินเดือน</h2>
+                            <p class="text-xs text-slate-400">บันทึกเวลาเข้างาน ขาด ลา OT และคำนวณเงินเดือนพนักงานทั้ง 5 แผนก</p>
+                        </div>
+                    </div>
+
+                    <div id="hr-view-attendance" class="space-y-6">
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+                            <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                                <span class="text-xs text-slate-400">พนักงานทั้งหมด</span>
+                                <h3 class="text-2xl font-bold text-slate-800 mt-1">45 คน</h3>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                                <span class="text-xs text-slate-400">มาทำงานวันนี้</span>
+                                <h3 class="text-2xl font-bold text-emerald-600 mt-1">40 คน</h3>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                                <span class="text-xs text-slate-400">ขาดงาน</span>
+                                <h3 class="text-2xl font-bold text-rose-500 mt-1">2 คน</h3>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                                <span class="text-xs text-slate-400">ลา</span>
+                                <h3 class="text-2xl font-bold text-amber-500 mt-1">3 คน</h3>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-xs">
+                                <span class="text-xs text-slate-400">ทำ OT วันนี้</span>
+                                <h3 class="text-2xl font-bold text-indigo-600 mt-1">12 คน</h3>
+                            </div>
+                        </div>
+
+                        <div id="pdf-print-area" class="bg-white rounded-3xl border border-sky-100 p-6 shadow-xs space-y-4">
+                            <div class="flex justify-between items-center flex-wrap gap-3 pb-3 border-b no-print">
+                                <div class="flex items-center gap-3">
+                                    <h3 class="font-bold text-slate-800 text-sm">รายชื่อพนักงานทั้งหมด (45 คน)</h3>
+                                </div>
+                                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition cursor-pointer">
+                                    <i class="fa-solid fa-file-pdf mr-1"></i> พิมพ์รายงาน PDF
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-2xl border border-slate-100">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 text-slate-700 font-bold border-b">
+                                        <tr>
+                                            <th class="p-3 text-center w-12">ลำดับ</th>
+                                            <th class="p-3">รหัส</th>
+                                            <th class="p-3">ชื่อ - สกุล</th>
+                                            <th class="p-3">แผนก</th>
+                                            <th class="p-3">ตำแหน่ง</th>
+                                            <th class="p-3 text-center">เข้างาน</th>
+                                            <th class="p-3 text-center">สถานะ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hr-emp-tbody" class="divide-y divide-slate-100 font-medium"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex justify-between items-center pt-2 no-print text-xs text-slate-400">
+                                <span>แสดงพนักงาน <span id="hr-start-idx">1</span>-<span id="hr-end-idx">12</span> จาก 45 คน</span>
+                                <div class="flex gap-1" id="hr-pagination-btns"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!--  3. MODALS SYSTEM                                                        -->
+    <!-- ========================================================================= -->
+
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+        <div class="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[480px]">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="md:col-span-6 wave-bg p-8 text-white flex flex-col justify-between relative overflow-hidden">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center"><i class="fa-solid fa-cubes text-white text-xl"></i></div>
+                    <div><h3 class="font-bold text-xl">T.K.ICE</h3><p class="text-xs text-ice-100">Management Center</p></div>
+                </div>
+                <div class="my-8 space-y-3">
+                    <h2 class="text-3xl font-extrabold">Welcome.</h2>
+                    <p class="text-ice-100 text-sm font-light">ระบบศูนย์ควบคุมโรงงานผลิตน้ำแข็งอัจฉริยะ<br>สำหรับผู้บริหารและเจ้าหน้าที่</p>
+                </div>
+                <div class="text-xs text-ice-200 flex justify-between items-center">
+                    <span>T.K.ICE Portal</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>Server Online</span>
+                </div>
+            </div>
+            <div class="md:col-span-6 p-8 sm:p-10 bg-white flex flex-col justify-center">
+                <h3 class="text-2xl font-bold text-slate-800">เข้าสู่ระบบ</h3>
+                <p class="text-xs text-slate-500 mt-1 mb-6">กรอกข้อมูลผู้ใช้งานเพื่อเข้าสู่ระบบงาน</p>
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อผู้ใช้ / อีเมล</label>
+                        <input type="text" required value="admin@tkice.co.th" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-ice-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">รหัสผ่าน</label>
+                        <input type="password" required value="••••••••" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-ice-500">
+                    </div>
+                    <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-ice-500 to-ice-600 hover:from-ice-600 text-white font-semibold text-sm shadow-md transition-all cursor-pointer">
+                        เข้าสู่ระบบ (Sign In)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div id="logout-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-100">
+            <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-2xl mx-auto mb-4 border border-rose-100 shadow-sm">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-1">ยืนยันการออกจากระบบ</h3>
+            <p class="text-xs text-slate-500 mb-6">คุณต้องการออกจากระบบ T.K.ICE Management Center ใช่หรือไม่?</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeLogoutModal()" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50 cursor-pointer">ยกเลิก</button>
+                <button onclick="confirmLogout()" class="py-3 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs shadow-md cursor-pointer">ยืนยันออกจากระบบ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW BILL MODAL -->
+    <div id="newBillModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-base text-slate-800">บันทึกเปิดบิลขายใหม่</h3>
+                <button onclick="closeModal('newBillModal')" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleNewBillSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">ชื่อลูกค้า / ร้านค้า</label>
+                    <input type="text" id="inputCustomer" required placeholder="เช่น ร้านส้มตำติดดอย" class="w-full px-3 py-2 border rounded-xl">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">ประเภทสินค้า</label>
+                        <select id="inputProduct" class="w-full px-3 py-2 border rounded-xl">
+                            <option>น้ำแข็งหลอด (เล็ก)</option>
+                            <option>น้ำแข็งหลอด (ใหญ่)</option>
+                            <option>น้ำแข็งบด</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">จำนวน (กระสอบ)</label>
+                        <input type="number" id="inputQty" value="50" min="1" required class="w-full px-3 py-2 border rounded-xl">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">ยอดเงินรวม (บาท)</label>
+                        <input type="number" id="inputAmount" value="1600" required class="w-full px-3 py-2 border rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">ช่องทางชำระ</label>
+                        <select id="inputPayment" class="w-full px-3 py-2 border rounded-xl">
+                            <option value="โอนเงิน">โอนเงิน (มีสลิป)</option>
+                            <option value="เงินสด">เงินสด</option>
+                            <option value="เครดิต">เครดิต (ค้างชำระ)</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl mt-3 cursor-pointer">บันทึกเปิดบิล</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BANK SLIP MODAL -->
+    <div id="slipModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <span class="font-bold text-sm text-slate-800">สลิปการโอนเงิน (K-Plus Verified)</span>
+                <button onclick="closeModal('slipModal')" class="text-slate-400 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="bg-emerald-900 text-white p-4 rounded-2xl space-y-2 text-xs">
+                <div class="flex justify-between border-b border-emerald-700 pb-2">
+                    <span class="font-bold">โอนเงินสำเร็จ</span>
+                    <span id="slipModalTime" class="text-emerald-200">10:15 น.</span>
+                </div>
+                <div class="text-center py-2">
+                    <span class="text-3xl font-extrabold" id="slipModalAmount">3,600.00 ฿</span>
+                </div>
+                <p><strong>ผู้โอน:</strong> <span id="slipModalSender">ร้านหมูกระทะขามเรียง</span></p>
+                <p><strong>ผู้รับ:</strong> บริษัท ที.เค. ไอซ์ จำกัด</p>
+                <p><strong>สินค้า:</strong> <span id="slipModalProduct">น้ำแข็งหลอดใหญ่</span></p>
+            </div>
+            <button onclick="closeModal('slipModal')" class="w-full bg-slate-800 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">ปิด</button>
+        </div>
+    </div>
+
+    <!-- DEBT MODAL -->
+    <div id="debtModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div><h3 class="font-bold text-base text-rose-600">รายชื่อลูกหนี้ค้างชำระ (86,200 ฿)</h3><p class="text-xs text-slate-400">14 ร้านค้าที่มียอดค้าง</p></div>
+                <button onclick="closeModal('debtModal')" class="text-slate-400 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-2 text-xs max-h-60 overflow-y-auto">
+                <div class="p-2.5 bg-slate-50 rounded-xl flex justify-between items-center"><div><b>ร้านนครพัฒนา</b><p class="text-[10px] text-slate-400">ครบกำหนด 05 ต.ค.</p></div><span class="font-bold text-rose-600">12,500 ฿</span></div>
+                <div class="p-2.5 bg-slate-50 rounded-xl flex justify-between items-center"><div><b>ร้านส้มตำป้า 3 พี่น้อง</b><p class="text-[10px] text-rose-500">เกินกำหนด 4 วัน</p></div><span class="font-bold text-rose-600">9,800 ฿</span></div>
+                <div class="p-2.5 bg-slate-50 rounded-xl flex justify-between items-center"><div><b>ครัวคุณแม่</b><p class="text-[10px] text-slate-400">ครบกำหนด 08 ต.ค.</p></div><span class="font-bold text-rose-600">8,400 ฿</span></div>
+            </div>
+            <button onclick="closeModal('debtModal')" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs font-semibold cursor-pointer">ปิด</button>
+        </div>
+    </div>
+
+    <!-- TOMORROW ADVANCE ORDER MODAL -->
+    <div id="tomorrowModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-slate-800">สั่งน้ำแข็งล่วงหน้า (พรุ่งนี้)</h3>
+                <button onclick="closeTomorrowModal()" class="text-slate-400 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">ชื่อร้านค้า</label>
+                    <input id="advCustomer" type="text" placeholder="เช่น ร้านป.เจริญค้า" class="w-full px-3 py-2 border rounded-xl">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div><label class="block text-emerald-700 font-bold mb-1">หลอดใหญ่</label><input id="advLarge" type="number" min="0" value="0" class="w-full px-3 py-2 border rounded-xl"></div>
+                    <div><label class="block text-blue-700 font-bold mb-1">หลอดเล็ก</label><input id="advSmall" type="number" min="0" value="0" class="w-full px-3 py-2 border rounded-xl"></div>
+                    <div><label class="block text-amber-700 font-bold mb-1">น้ำแข็งบด</label><input id="advCrushed" type="number" min="0" value="0" class="w-full px-3 py-2 border rounded-xl"></div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeTomorrowModal()" class="px-4 py-2 bg-slate-100 rounded-xl text-xs font-semibold cursor-pointer">ยกเลิก</button>
+                <button onclick="submitTomorrowAdvanceOrder()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold cursor-pointer">เพิ่มเข้าแผนผลิต</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MACHINE IOT MODAL -->
+    <div id="machineModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div><h3 id="modalMachineTitle" class="font-bold text-base text-slate-800">เครื่องจักร</h3><span class="text-xs text-emerald-600 font-bold">● ทำงานปกติ OEE 96%</span></div>
+                <button onclick="closeMachineModal()" class="text-slate-400 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="grid grid-cols-3 gap-3 text-center text-xs">
+                <div class="bg-slate-50 p-3 rounded-xl border"><span>กระแสไฟ</span><p class="font-bold text-sm text-slate-800 mt-1">142.5 A</p></div>
+                <div class="bg-slate-50 p-3 rounded-xl border"><span>อุณหภูมิ</span><p class="font-bold text-sm text-slate-800 mt-1">-12.4 °C</p></div>
+                <div class="bg-slate-50 p-3 rounded-xl border"><span>แรงดัน</span><p class="font-bold text-sm text-slate-800 mt-1">18.2 bar</p></div>
+            </div>
+            <div class="bg-blue-50 p-3.5 rounded-2xl border border-blue-100 text-xs text-blue-900">
+                <p><strong>ข้อแนะนำการบำรุงรักษา:</strong> ตรวจสอบระดับน้ำมันหล่อลื่นและฟิลเตอร์ระบายความร้อนตามรอบบำรุงรักษาประจำเดือน</p>
+            </div>
+            <button onclick="closeMachineModal()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs font-semibold cursor-pointer">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
+    <!-- ADD LOG MODAL -->
+    <div id="addLogModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4">
+            <h3 class="font-bold text-base text-slate-800">บันทึกยอดผลิตน้ำแข็งเพิ่ม</h3>
+            <div class="space-y-3 text-xs">
+                <select id="logProductType" class="w-full px-3 py-2 border rounded-xl">
+                    <option>น้ำแข็งหลอด (เล็ก)</option>
+                    <option>น้ำแข็งหลอด (ใหญ่)</option>
+                    <option>น้ำแข็งบด</option>
+                </select>
+                <input id="logAmount" type="number" placeholder="จำนวนกระสอบ เช่น 100" class="w-full px-3 py-2 border rounded-xl">
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeAddLogModal()" class="px-4 py-2 bg-slate-100 rounded-xl text-xs cursor-pointer">ยกเลิก</button>
+                <button onclick="submitProductionLog()" class="px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold cursor-pointer">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!--  4. JAVASCRIPT LOGIC รวมทุกระบบเชื่อมโยงกันอย่างแม่นยำ                           -->
+    <!-- ========================================================================= -->
+    <script>
+        // ----------------- TAB & ROUTING CONTROLLER -----------------
+        const tabsList = ['overview', 'production', 'energy', 'delivery', 'sales', 'hr'];
+        const tabTitles = {
+            'overview': 'ภาพรวมกิจการ',
+            'production': 'การผลิตและควบคุมคุณภาพ',
+            'energy': 'พลังงาน & IoT Sub-Meter',
+            'delivery': 'การจัดส่งและ Fleet GPS',
+            'sales': 'ยอดขายและลูกค้า',
+            'hr': 'พนักงาน & เงินเดือน'
+        };
+
+        function switchDashboardTab(tabKey) {
+            tabsList.forEach(t => {
+                const content = document.getElementById(`tab-content-${t}`);
+                const navBtn = document.getElementById(`nav-tab-${t}`);
+                if (content) content.classList.add('hidden');
+                if (navBtn) {
+                    navBtn.className = "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-white hover:bg-white/20 transition-all whitespace-nowrap text-left cursor-pointer font-medium";
+                    const icon = navBtn.querySelector('i');
+                    if (icon) icon.className = icon.className.replace('text-sky-600', 'text-sky-100');
+                }
+            });
+
+            const activeContent = document.getElementById(`tab-content-${tabKey}`);
+            const activeNav = document.getElementById(`nav-tab-${tabKey}`);
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (activeNav) {
+                activeNav.className = "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-white text-sky-700 font-bold shadow-md shadow-sky-900/10 transition-all whitespace-nowrap text-left cursor-pointer";
+                const icon = activeNav.querySelector('i');
+                if (icon) icon.className = icon.className.replace('text-sky-100', 'text-sky-600');
+            }
+
+            document.getElementById('current-tab-title').innerText = tabTitles[tabKey] || 'แดชบอร์ด';
+
+            if (tabKey === 'delivery') {
+                setTimeout(() => { initOrResizeDeliveryMap(); }, 150);
+            }
+            if (tabKey === 'energy') {
+                setTimeout(() => {
+                    if (mixedChart) mixedChart.resize();
+                    if (donutChart) donutChart.resize();
+                    if (historyChart) historyChart.resize();
+                }, 150);
+            }
+        }
+
+        // ----------------- LOGIN / LOGOUT CONTROLLER -----------------
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            closeLoginModal();
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            switchDashboardTab('overview');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openLogoutModal() { document.getElementById('logout-modal').classList.remove('hidden'); }
+        function closeLogoutModal() { document.getElementById('logout-modal').classList.add('hidden'); }
+
+        function confirmLogout() {
+            closeLogoutModal();
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('landing-page').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // ----------------- REAL-TIME CLOCKS -----------------
+        function updateAllClocks() {
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')} น.`;
+            const clk = document.getElementById('global-dashboard-clock');
+            if (clk) clk.innerText = timeStr;
+        }
+        setInterval(updateAllClocks, 1000);
+        updateAllClocks();
+
+        // ----------------- MODULE 1: PRODUCTION & QC -----------------
+        let tomorrowOrdersList = [
+            { id: 1, customer: 'ร้านนครพัฒนา', large: 0, small: 50, crushed: 0 },
+            { id: 2, customer: '7-11 สาขาในเมือง', large: 100, small: 0, crushed: 0 },
+            { id: 3, customer: 'ร้านส้มตำติดดอย', large: 0, small: 0, crushed: 80 },
+            { id: 4, customer: 'ร้านเจ้น้อย', large: 60, small: 0, crushed: 20 },
+            { id: 5, customer: 'ร้านป.เจริญค้า', large: 0, small: 30, crushed: 0 }
+        ];
+
+        function openTomorrowModal() { document.getElementById('tomorrowModal').classList.remove('hidden'); }
+        function closeTomorrowModal() { document.getElementById('tomorrowModal').classList.add('hidden'); }
+        function submitTomorrowAdvanceOrder() {
+            const cust = document.getElementById('advCustomer').value.trim();
+            const l = parseInt(document.getElementById('advLarge').value) || 0;
+            const s = parseInt(document.getElementById('advSmall').value) || 0;
+            const c = parseInt(document.getElementById('advCrushed').value) || 0;
+            if(!cust) return alert('กรุณากรอกชื่อร้าน');
+            tomorrowOrdersList.push({ id: tomorrowOrdersList.length+1, customer: cust, large: l, small: s, crushed: c });
+            closeTomorrowModal();
+            alert('เพิ่มออเดอร์เรียบร้อย!');
+        }
+
+        function openMachineModal(k) { document.getElementById('machineModal').classList.remove('hidden'); }
+        function closeMachineModal() { document.getElementById('machineModal').classList.add('hidden'); }
+        function openAddLogModal() { document.getElementById('addLogModal').classList.remove('hidden'); }
+        function closeAddLogModal() { document.getElementById('addLogModal').classList.add('hidden'); }
+        function submitProductionLog() {
+            alert('บันทึกยอดผลิตเข้าสู่ระบบสำเร็จ');
+            closeAddLogModal();
+        }
+
+        // =========================================================================
+        //  MODULE 2: ENERGY & IOT SUB-METER (ฉบับเต็ม 100% ตามไฟล์ต้นฉบับของคุณ)     
+        // =========================================================================
+        let RATE_PER_KWH = 4.5;
+        let isToday = true;
+        let factorMultiplier = 1.0; 
+        let currentTotalKwh = 1824; 
+        let currentPeakKw = 185;
+        let currentMonthThb = 198431;
+
+        let machinesBase = [
+            { id: 'ice60', name: 'เครื่องทำน้ำแข็ง 60 ตัน', icon: 'fa-snowflake', kwh: 785, maxKwh: 1000, color: '#3b82f6' },
+            { id: 'ice50_1', name: 'เครื่องทำน้ำแข็ง 50 ตัน (1)', icon: 'fa-icicles', kwh: 401, maxKwh: 600, color: '#0ea5e9' },
+            { id: 'ice50_2', name: 'เครื่องทำน้ำแข็ง 50 ตัน (2)', icon: 'fa-icicles', kwh: 219, maxKwh: 400, color: '#06b6d4' },
+            { id: 'ice10', name: 'เครื่องทำน้ำแข็ง 10 ตัน', icon: 'fa-cube', kwh: 146, maxKwh: 250, color: '#10b981' },
+            { id: 'water', name: 'ระบบกรองน้ำ', icon: 'fa-faucet-drip', kwh: 91, maxKwh: 150, color: '#8b5cf6' },
+            { id: 'coldroom', name: 'ห้องเย็น', icon: 'fa-temperature-low', kwh: 73, maxKwh: 120, color: '#f59e0b' },
+            { id: 'office', name: 'สำนักงานและหอพัก', icon: 'fa-building', kwh: 109, maxKwh: 150, color: '#64748b' }
+        ];
+
+        let machines = JSON.parse(JSON.stringify(machinesBase));
+
+        let demoTick = 0;
+        let lastAlertKey = '';
+        const DEMO_INTERVAL_MS = 3000;
+        const DEMAND_WARNING_KW = 180;
+        const DEMAND_CRITICAL_KW = 195;
+        const DAILY_BUDGET_KWH = 2200;
+        const machineLoadProfile = {
+            ice60: 1.00, ice50_1: 0.82, ice50_2: 0.66, ice10: 0.45,
+            water: 0.32, coldroom: 0.38, office: 0.22
+        };
+
+        let alerts = [
+            { time: '15:20', machine: 'ระบบไฟฟ้ารวม', issue: 'Peak Demand สูงใกล้เกณฑ์ควบคุม', status: 'warning', detected: 'Peak Demand 188.4 kW', costImpact: 'อาจทำให้ต้นทุน Demand ของรอบบิลสูงขึ้น', cause: 'มีเครื่องทำน้ำแข็งหลายชุดทำงานพร้อมกันในช่วงโหลดสูง', action: 'ตรวจสอบตารางเดินเครื่อง และพิจารณาเหลื่อมเวลาเริ่มเครื่องจักรขนาดใหญ่ เพื่อลดโหลดพร้อมกัน' },
+            { time: '14:05', machine: 'เครื่องทำน้ำแข็ง 50 ตัน (2)', issue: 'การใช้ไฟสูงกว่ารูปแบบปกติ', status: 'critical', machineId: 'ice50_2', detected: 'โหลดสูงกว่าค่าปกติประมาณ 18%', costImpact: 'ต้นทุนวันนี้สูงกว่ารูปแบบปกติประมาณ 178 บาท', cause: 'โหลดคอมเพรสเซอร์สูง หรือประสิทธิภาพการทำความเย็นลดลง', action: 'ตรวจสอบอุณหภูมิ/แรงดันคอมเพรสเซอร์ การระบายความร้อน และสภาพคอนเดนเซอร์ หากค่าสูงต่อเนื่องให้แจ้งช่างตรวจสอบ' },
+            { time: '10:15', machine: 'ห้องเย็น', issue: 'การใช้ไฟสูงกว่าช่วงเวลาเดียวกัน', status: 'warning', machineId: 'coldroom', detected: 'สูงกว่าค่าฐานประมาณ 12%', costImpact: 'ค่าไฟเพิ่มขึ้นประมาณ 54 บาทในวันนี้', cause: 'ประตูเปิดบ่อย อุณหภูมิภายนอกสูง หรือระบบทำความเย็นทำงานนานกว่าปกติ', action: 'ตรวจสอบการปิดประตู ยางขอบประตู อุณหภูมิตั้งค่า และเวลาทำงานของคอมเพรสเซอร์' },
+            { time: '08:42', machine: 'ระบบกรองน้ำ', issue: 'กลับมาเชื่อมต่อและรับข้อมูลตามปกติ', status: 'normal', machineId: 'water', detected: 'สัญญาณ Online', costImpact: 'ไม่พบผลกระทบด้านต้นทุน', cause: 'การเชื่อมต่อกลับสู่ภาวะปกติ', action: 'ติดตามสถานะต่อเนื่อง หากเกิด Signal Loss ซ้ำให้ตรวจสอบ Gateway และเครือข่าย' }
+        ];
+
+        const getAlertStyle = (status) => {
+            switch(status) {
+                case 'critical': return { bg: 'bg-rose-50/50', text: 'text-rose-600', badge: 'bg-rose-500 text-white', icon: 'fa-triangle-exclamation', label: 'ต้องตรวจสอบ' };
+                case 'warning': return { bg: 'bg-amber-50/50', text: 'text-amber-700', badge: 'bg-amber-400 text-amber-900', icon: 'fa-circle-exclamation', label: 'เฝ้าระวัง' };
+                case 'normal': return { bg: 'bg-emerald-50/50', text: 'text-emerald-700', badge: 'bg-emerald-500 text-white', icon: 'fa-circle-check', label: 'ปกติ' };
+                default: return { bg: 'bg-slate-50', text: 'text-slate-600', badge: 'bg-slate-400 text-white', icon: 'fa-info-circle', label: 'ตรวจสอบแล้ว' };
+            }
+        }
+
+        const fmtNum = (num) => (num || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+        const fmtThb = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Calendar Logic
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        let selectedDate = new Date(now);
+        let calendarView = new Date(now.getFullYear(), now.getMonth(), 1);
+        const thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+        function toDateStr(d) {
+            const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+            return `${y}-${m}-${day}`;
+        }
+        function formatDisplay(d) {
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        }
+        function renderCalendar() {
+            const title=document.getElementById('calendar-title');
+            const days=document.getElementById('calendar-days');
+            const next=document.getElementById('calendar-next');
+            if(!title || !days) return;
+            title.textContent=`${thaiMonths[calendarView.getMonth()]} ${calendarView.getFullYear()}`;
+            days.innerHTML='';
+            const firstDay=new Date(calendarView.getFullYear(),calendarView.getMonth(),1).getDay();
+            const daysInMonth=new Date(calendarView.getFullYear(),calendarView.getMonth()+1,0).getDate();
+            for(let i=0;i<firstDay;i++){ const x=document.createElement('span'); x.className='h-8'; days.appendChild(x); }
+            for(let d=1;d<=daysInMonth;d++){
+                const date=new Date(calendarView.getFullYear(),calendarView.getMonth(),d); date.setHours(0,0,0,0);
+                const btn=document.createElement('button'); btn.type='button'; btn.textContent=d;
+                const future=date>now, selected=toDateStr(date)===toDateStr(selectedDate), today=toDateStr(date)===todayStr;
+                btn.className='h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer '+(future?'text-slate-300 cursor-not-allowed':selected?'bg-blue-600 text-white shadow':'text-slate-700 hover:bg-blue-50 hover:text-blue-700')+(today&&!selected?' ring-1 ring-blue-300':'');
+                btn.disabled=future;
+                if(!future) btn.onclick=(e)=>{e.stopPropagation(); selectCalendarDate(date);};
+                days.appendChild(btn);
+            }
+            const nextMonth=new Date(calendarView.getFullYear(),calendarView.getMonth()+1,1);
+            if(next) {
+                next.disabled=nextMonth>new Date(now.getFullYear(),now.getMonth(),1);
+                next.classList.toggle('opacity-30',next.disabled);
+            }
+        }
+        window.toggleCalendar=function(e){ if(e)e.stopPropagation(); const p=document.getElementById('calendar-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) renderCalendar(); };
+        window.calendarMove=function(delta,e){ if(e)e.stopPropagation(); const candidate=new Date(calendarView.getFullYear(),calendarView.getMonth()+delta,1); if(candidate<=new Date(now.getFullYear(),now.getMonth(),1)){ calendarView=candidate; renderCalendar(); } };
+        window.calendarToday=function(e){ if(e)e.stopPropagation(); selectCalendarDate(new Date(now)); };
+        function selectCalendarDate(date){ selectedDate=new Date(date); calendarView=new Date(date.getFullYear(),date.getMonth(),1); document.getElementById('date-display').textContent=formatDisplay(date); document.getElementById('calendar-panel').classList.add('hidden'); changeDate(toDateStr(date)); }
+        
+        document.addEventListener('click',(e)=>{ const root=document.getElementById('calendar-root'); if(root&&!root.contains(e.target)) document.getElementById('calendar-panel')?.classList.add('hidden'); });
+
+        function initSubmetersHTML() {
+            const smContainer = document.getElementById('submeters-container');
+            if(!smContainer) return;
+            smContainer.innerHTML = '';
+            machines.forEach(m => {
+                const card = `
+                    <div id="card-${m.id}" class="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs flex flex-col justify-between relative transition-all">
+                        <div class="flex items-center gap-2 mb-2 border-b border-slate-100 pb-2">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow-xs shrink-0 bg-slate-50 border border-slate-100" style="color: ${m.color}">
+                                <i class="fa-solid ${m.icon}"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="text-[11px] font-bold text-slate-700 truncate w-full" title="${m.name}">${m.name}</h4>
+                                <div class="flex items-center gap-1 mt-0.5">
+                                    <span class="relative flex h-2 w-2">
+                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" id="ping-${m.id}"></span>
+                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" id="dot-${m.id}"></span>
+                                    </span>
+                                    <span class="text-[9px] text-slate-400 font-semibold" id="status-text-${m.id}">ปกติ</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1 mb-2">
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-[10px] text-slate-500" id="unit-label-${m.id}">หน่วยไฟวันนี้</span>
+                                <div class="text-right">
+                                    <span class="text-xs font-bold text-slate-800 leading-none data-transition" id="kwh-${m.id}">0</span>
+                                    <span class="text-[9px] text-slate-400">kWh</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-[10px] text-slate-500">กำลังไฟขณะนี้</span>
+                                <span class="text-[11px] font-bold text-slate-700"><span id="kw-${m.id}">0</span> kW</span>
+                            </div>
+                            <div class="flex justify-between items-baseline bg-slate-50 px-1.5 py-0.5 rounded-md">
+                                <span class="text-[10px] font-medium text-slate-500" id="cost-label-${m.id}">ค่าไฟวันนี้</span>
+                                <span class="text-[11px] font-bold text-slate-700 data-transition" id="thb-${m.id}">฿0</span>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <div class="flex justify-between text-[9px] text-slate-400 mb-1">
+                                <span>เทียบเกณฑ์</span>
+                                <span class="font-bold data-transition text-slate-600" id="percent-${m.id}">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                <div class="h-1.5 rounded-full data-transition" style="background-color: ${m.color}; width: 0%" id="bar-${m.id}"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                smContainer.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        function updateSubmetersUI() {
+            let total = machines.reduce((sum, m) => sum + (m.kwh || 0), 0);
+            machines.forEach(m => {
+                const kwhEl = document.getElementById(`kwh-${m.id}`);
+                const thbEl = document.getElementById(`thb-${m.id}`);
+                const kwEl = document.getElementById(`kw-${m.id}`);
+                const percentEl = document.getElementById(`percent-${m.id}`);
+                const barEl = document.getElementById(`bar-${m.id}`);
+                const thresholdPct = Math.min(100, ((m.kwh || 0) / m.maxKwh) * 100);
+                if(kwhEl) kwhEl.innerText = fmtNum(m.kwh);
+                if(kwEl) kwEl.innerText = (m.liveLoad || 0).toFixed(1);
+                if(thbEl) thbEl.innerText = `฿${fmtThb((m.kwh || 0) * RATE_PER_KWH)}`;
+                if(percentEl) percentEl.innerText = `${thresholdPct.toFixed(0)}%`;
+                if(barEl) barEl.style.width = `${thresholdPct}%`;
+            });
+        }
+
+        function renderAlerts() {
+            const tbody = document.getElementById('alerts-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            alerts.forEach((a, index) => {
+                const style = getAlertStyle(a.status);
+                const tr = `
+                    <tr class="${style.bg} border-l-4 ${style.text.replace('text', 'border')} hover:bg-slate-50 cursor-pointer" onclick="openAlertModal(${index})">
+                        <td class="px-3 py-2.5 font-mono text-xs text-slate-500">${a.time}</td>
+                        <td class="px-3 py-2.5 font-bold text-slate-700">${a.machine}</td>
+                        <td class="px-3 py-2.5 font-medium ${style.text}">${a.issue}<span class="ml-2 text-[9px] text-slate-400"><i class="fa-solid fa-circle-info"></i> กดดูรายละเอียด</span></td>
+                        <td class="px-3 py-2.5 text-center"><button class="px-2 py-1 rounded text-[10px] font-bold ${style.badge} inline-flex items-center gap-1"><i class="fa-solid ${style.icon}"></i> ${style.label}</button></td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+        }
+
+        let selectedAlertMachineId = null;
+        window.openAlertModal = function(index) {
+            const a = alerts[index]; if(!a) return;
+            selectedAlertMachineId = a.machineId || null;
+            document.getElementById('modal-title').innerText = `${a.machine} • ${a.issue}`;
+            document.getElementById('modal-detected').innerText = a.detected || 'ระบบตรวจพบค่าที่อยู่นอกช่วงปกติ';
+            document.getElementById('modal-cost').innerText = a.costImpact || 'อยู่ระหว่างประเมินผลกระทบ';
+            document.getElementById('modal-cause').innerText = a.cause || 'ควรตรวจสอบข้อมูลจากจุดติดตั้งและสภาพการทำงานของอุปกรณ์';
+            document.getElementById('modal-action').innerText = a.action || 'ตรวจสอบจุดติดตั้ง สถานะเครื่องจักร และค่าพลังงานล่าสุดก่อนดำเนินการแก้ไข';
+            document.getElementById('modal-machine-btn').classList.toggle('hidden', !selectedAlertMachineId);
+            const modal = document.getElementById('alert-modal'); modal.classList.remove('hidden'); modal.classList.add('flex');
+        };
+        window.closeAlertModal = function() { const modal=document.getElementById('alert-modal'); modal.classList.add('hidden'); modal.classList.remove('flex'); };
+        window.focusMachineFromModal = function() {
+            if(!selectedAlertMachineId) return; closeAlertModal();
+            const card=document.getElementById(`card-${selectedAlertMachineId}`); if(card){ card.scrollIntoView({behavior:'smooth',block:'center'}); card.classList.add('ring-2','ring-blue-500'); setTimeout(()=>card.classList.remove('ring-2','ring-blue-500'),2500); }
+        };
+
+        // Charts configuration
+        let mixedChart = null;
+        let donutChart = null;
+        let historyChart = null;
+
+        const mixedMockData = {
+            hourly: {
+                labels: ['00:00', '02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '24:00'],
+                peak: [60, 70, 110, 150, 180, 185, 170, 190, 185, 160, 140, 100, 80],
+                today: [90, 110, 130, 150, 180, 220, 240, 290, 280, 210, 160, 130, 100],
+                yesterday: [85, 105, 125, 145, 170, 210, 230, 280, 270, 200, 150, 120, 95],
+                xTitle: 'เวลา (ชั่วโมง)'
+            },
+            daily: {
+                labels: ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์', 'เสาร์', 'อาทิตย์'],
+                peak: [175, 180, 185, 170, 165, 150, 140],
+                today: [1750, 1824, 1800, 1720, 1680, 1450, 1350], 
+                yesterday: [1700, 1780, 1750, 1650, 1600, 1400, 1300],
+                xTitle: 'วันในสัปดาห์'
+            }
+        };
+
+        const historyMockData = {
+            daily: { labels: ['พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.', 'จ.', 'อ. (ที่เลือก)'], current: [7800, 8100, 7900, 6800, 6500, 8000, 8240], prev: [7600, 7900, 7800, 6700, 6400, 7800, 7900] },
+            weekly: { labels: ['สัปดาห์ 1', 'สัปดาห์ 2', 'สัปดาห์ 3', 'สัปดาห์ 4'], current: [48000, 52000, 49000, 49431], prev: [47000, 50000, 48500, 48000] },
+            monthly: { labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'], current: [180000, 185000, 192000, 205000, 198000, 189000, 195000, 191000, 198431, null, null, null], prev: [175000, 180000, 188000, 200000, 190000, 185000, 190000, 188000, 190000, 185000, 178000, 175000] }
+        };
+
+        function initEnergyCharts() {
+            const ctxMixed = document.getElementById('mixedChart')?.getContext('2d');
+            if(ctxMixed && !mixedChart) {
+                mixedChart = new Chart(ctxMixed, {
+                    type: 'bar',
+                    data: { labels: [], datasets: [
+                        { type: 'line', label: 'Peak Demand (kW)', data: [], borderColor: '#ef4444', backgroundColor: '#ef4444', borderWidth: 2, tension: 0.4, yAxisID: 'y1', pointRadius: 3, pointBackgroundColor: '#fff' },
+                        { type: 'bar', label: 'วันที่เลือก (kWh)', data: [], backgroundColor: '#3b82f6', borderRadius: 4, yAxisID: 'y' },
+                        { type: 'bar', label: 'อดีตเปรียบเทียบ (kWh)', data: [], backgroundColor: '#cbd5e1', borderRadius: 4, yAxisID: 'y' }
+                    ]},
+                    options: {
+                        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, title: { display: true, text: '', font: { size: 10 } } },
+                            y: { type: 'linear', position: 'left', title: { display: true, text: 'Energy (kWh)', font: { size: 10 } } },
+                            y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Demand (kW)', font: { size: 10 } } }
+                        }
+                    }
+                });
+            }
+
+            const ctxDonut = document.getElementById('donutChart')?.getContext('2d');
+            if(ctxDonut && !donutChart) {
+                donutChart = new Chart(ctxDonut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: machines.map(m => m.name),
+                        datasets: [{ data: [], backgroundColor: machines.map(m => m.color), borderWidth: 2, borderColor: '#ffffff', hoverOffset: 5 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed.toLocaleString()} kWh` } } } }
+                });
+            }
+
+            const ctxHistory = document.getElementById('historyChart')?.getContext('2d');
+            if(ctxHistory && !historyChart) {
+                let gradientFill = ctxHistory.createLinearGradient(0, 0, 0, 200);
+                gradientFill.addColorStop(0, 'rgba(37, 99, 235, 0.3)');
+                gradientFill.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+                
+                historyChart = new Chart(ctxHistory, {
+                    type: 'line',
+                    data: { labels: [], datasets: [
+                        { label: 'ช่วงเวลาปัจจุบัน (บาท)', data: [], borderColor: '#2563eb', backgroundColor: gradientFill, borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: '#fff', pointBorderColor: '#2563eb', pointRadius: 4 },
+                        { label: 'ช่วงเวลาก่อนหน้า (บาท)', data: [], borderColor: '#94a3b8', borderWidth: 2, borderDash: [5, 5], fill: false, tension: 0.3, pointRadius: 0 }
+                    ]},
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 12, usePointStyle: true, font: {size: 10} } }, tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ฿${ctx.parsed.y.toLocaleString()}` } } },
+                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: function(v) { return v >= 1000 ? (v / 1000) + 'k' : v; } } } }
+                    }
+                });
+            }
+        }
+
+        window.changeDate = function(dateStr) {
+            isToday = (dateStr === todayStr);
+            const periodText = isToday ? 'วันนี้' : 'วันที่เลือก';
+            document.getElementById('label-energy-period').innerText = `การใช้ไฟรวม${periodText}`;
+            document.getElementById('label-cost-period').innerText = `ค่าไฟ${periodText} (ประมาณการ)`;
+            document.getElementById('label-peak-period').innerText = `Peak Demand ${periodText}`;
+            machines.forEach(m => { 
+                const ul=document.getElementById(`unit-label-${m.id}`); 
+                const cl=document.getElementById(`cost-label-${m.id}`); 
+                if(ul) ul.innerText = isToday ? 'หน่วยไฟวันนี้' : 'หน่วยไฟวันที่เลือก'; 
+                if(cl) cl.innerText = isToday ? 'ค่าไฟวันนี้' : 'ค่าไฟวันที่เลือก'; 
+            });
+            
+            let hash = 0;
+            for (let i = 0; i < dateStr.length; i++) hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
+            factorMultiplier = isToday ? 1.0 : (Math.abs(hash) % 40 + 60) / 100; 
+            
+            currentTotalKwh = 0;
+            machines.forEach((m, i) => {
+                const variance = 1 + (i % 3 - 1) * 0.1; 
+                m.kwh = (machinesBase.find(b => b.id === m.id).kwh) * factorMultiplier * variance;
+                currentTotalKwh += m.kwh;
+            });
+            
+            currentPeakKw = 185 * factorMultiplier;
+            const dayOfMonth = new Date(dateStr).getDate();
+            currentMonthThb = 198431 * (dayOfMonth / (now.getDate() || 1)) * (isToday ? 1 : 0.95);
+
+            updateAllUI();
+        };
+
+        window.toggleMixedChart = function(period) {
+            const btnHourly = document.getElementById('btn-chart-hourly');
+            const btnDaily = document.getElementById('btn-chart-daily');
+            
+            if (period === 'hourly') {
+                btnHourly.className = "px-3 py-1 text-xs font-semibold bg-white text-blue-600 shadow-xs rounded-lg transition-all cursor-pointer";
+                btnDaily.className = "px-3 py-1 text-xs font-semibold text-slate-500 hover:text-slate-700 rounded-lg transition-all cursor-pointer";
+            } else {
+                btnDaily.className = "px-3 py-1 text-xs font-semibold bg-white text-blue-600 shadow-xs rounded-lg transition-all cursor-pointer";
+                btnHourly.className = "px-3 py-1 text-xs font-semibold text-slate-500 hover:text-slate-700 rounded-lg transition-all cursor-pointer";
+            }
+            updateMixedChart(period);
+        };
+
+        window.changeHistoryPeriod = function() {
+            const period = document.getElementById('history-selector').value;
+            const data = historyMockData[period];
+            if(!historyChart) return;
+            historyChart.data.labels = data.labels;
+            historyChart.data.datasets[0].data = data.current.map(v => v ? v * factorMultiplier : null);
+            historyChart.data.datasets[1].data = data.prev;
+            historyChart.update();
+        };
+
+        function updateMixedChart(period) {
+            if(!mixedChart) return;
+            const data = JSON.parse(JSON.stringify(mixedMockData[period]));
+            mixedChart.data.labels = data.labels;
+            mixedChart.data.datasets[0].data = data.peak.map(v => v * factorMultiplier);
+            mixedChart.data.datasets[1].data = data.today.map(v => v * factorMultiplier);
+            mixedChart.data.datasets[2].data = data.yesterday;
+            mixedChart.options.scales.x.title.text = data.xTitle;
+            mixedChart.update();
+        }
+
+        function updateDonutLegend(totalKwh) {
+            const legendContainer = document.getElementById('donut-legend');
+            if(!legendContainer) return;
+            legendContainer.innerHTML = '';
+            let sortedMeters = [...machines].sort((a,b) => b.kwh - a.kwh);
+            
+            sortedMeters.forEach(m => {
+                let percent = totalKwh > 0 ? ((m.kwh / totalKwh) * 100).toFixed(0) : 0;
+                legendContainer.innerHTML += `
+                    <div class="flex items-center justify-between py-1 border-b border-slate-50 last:border-0">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-xs shadow-2xs shrink-0" style="background-color: ${m.color}"></span>
+                            <span class="text-slate-600 truncate text-[11px] w-28" title="${m.name}">${m.name}</span>
+                        </div>
+                        <div class="text-right flex items-center gap-2">
+                            <span class="text-[10px] text-slate-400">฿${fmtNum(m.kwh * RATE_PER_KWH)}</span>
+                            <span class="text-slate-800 font-bold text-xs w-8 text-right">${percent}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateAllUI() {
+            document.getElementById('kpi-kwh').innerText = fmtNum(currentTotalKwh);
+            document.getElementById('kpi-thb').innerText = fmtNum(currentTotalKwh * RATE_PER_KWH);
+            document.getElementById('kpi-cost-kwh').innerText = fmtNum(currentTotalKwh);
+            document.getElementById('kpi-peak').innerText = currentPeakKw.toFixed(1);
+            
+            document.getElementById('kpi-month').innerText = fmtNum(currentMonthThb);
+            document.getElementById('kpi-month-kwh').innerText = fmtNum(currentMonthThb / RATE_PER_KWH);
+            let monthPct = Math.min(100, (currentMonthThb / 280000) * 100).toFixed(0);
+            document.getElementById('kpi-month-bar').style.width = `${monthPct}%`;
+
+            updateSubmetersUI();
+
+            if(donutChart) {
+                donutChart.data.datasets[0].data = machines.map(m => m.kwh);
+                donutChart.update('none');
+            }
+            document.getElementById('center-donut-val').innerText = fmtNum(currentTotalKwh);
+            updateDonutLegend(currentTotalKwh);
+
+            const currentMixedMode = document.getElementById('btn-chart-hourly')?.classList.contains('text-blue-600') ? 'hourly' : 'daily';
+            updateMixedChart(currentMixedMode);
+            changeHistoryPeriod();
+        }
+
+        function demoTime() {
+            return new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function pushDemoAlert(machine, issue, status, key) {
+            if (key === lastAlertKey) return;
+            lastAlertKey = key;
+            alerts.unshift({ time: demoTime(), machine, issue, status, detected: issue, costImpact: status === 'critical' ? 'มีความเสี่ยงต่อต้นทุนพลังงานและ Demand' : 'อาจทำให้ต้นทุนสูงขึ้นหากเกิดต่อเนื่อง', cause: status === 'critical' ? 'โหลดรวมสูงหรือมีเครื่องจักรขนาดใหญ่ทำงานพร้อมกัน' : 'รูปแบบการใช้ไฟสูงกว่าช่วงปกติ', action: status === 'critical' ? 'ตรวจสอบโหลดเครื่องจักรที่ทำงานพร้อมกันและพิจารณาเหลื่อมเวลาเดินเครื่อง' : 'ตรวจสอบเครื่องจักรและติดตามค่าต่อเนื่อง หากยังสูงให้แจ้งผู้รับผิดชอบตรวจสอบ' });
+            alerts = alerts.slice(0, 6);
+            renderAlerts();
+        }
+
+        function setMachineStatus(id, level, label) {
+            const dot=document.getElementById(`dot-${id}`), ping=document.getElementById(`ping-${id}`), statusText=document.getElementById(`status-text-${id}`);
+            if(!dot||!ping||!statusText) return;
+            const map={normal:['emerald','500'],active:['blue','500'],warning:['amber','400'],critical:['rose','500'],standby:['slate','400'],offline:['slate','500']};
+            const [color,shade]=map[level]||map.normal;
+            dot.className=`relative inline-flex rounded-full h-2 w-2 bg-${color}-${shade}`;
+            ping.className=level==='offline'||level==='standby' ? 'hidden' : `animate-ping absolute inline-flex h-full w-full rounded-full bg-${color}-400 opacity-75`;
+            statusText.innerText=label; statusText.className=`text-[9px] font-semibold text-${color}-${shade}`;
+        }
+
+        function updateOverallStatus() {
+            const el=document.getElementById('overall-status'), icon=document.getElementById('overall-status-icon');
+            if(!el || !icon) return;
+            const hasCritical=machines.some(m=>m.demoStatus==='critical'), hasWarning=machines.some(m=>m.demoStatus==='warning') || currentPeakKw>=DEMAND_WARNING_KW;
+            if(hasCritical){el.innerText='ระบบโดยรวม: ต้องตรวจสอบ';el.className='font-bold text-rose-700 text-sm';icon.className='w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center';}
+            else if(hasWarning){el.innerText='ระบบโดยรวม: เฝ้าระวัง';el.className='font-bold text-amber-700 text-sm';icon.className='w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center';}
+            else{el.innerText='ระบบโดยรวม: ปกติ';el.className='font-bold text-emerald-700 text-sm';icon.className='w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center';}
+        }
+
+        function updateDynamicRecommendations() {
+            const usagePct = Math.round((currentTotalKwh / DAILY_BUDGET_KWH) * 100);
+            const hottest = [...machines].sort((a,b) => (b.liveLoad || 0) - (a.liveLoad || 0))[0];
+            const abnormal = machines.find(m => m.demoStatus === 'warning' || m.demoStatus === 'critical');
+
+            const ruT = document.getElementById('rec-usage-title');
+            const ruD = document.getElementById('rec-usage-detail');
+            if(ruT) ruT.innerText = `ใช้พลังงานแล้ว ${usagePct}% ของเกณฑ์วันนี้`;
+            if(ruD) ruD.innerText = usagePct > 85 ? 'ควรติดตามโหลดเครื่องจักรช่วงที่เหลือของวันเพื่อลดต้นทุนพลังงาน' : 'การใช้พลังงานรวมยังอยู่ในช่วงเกณฑ์ที่กำหนดไว้';
+
+            const rpT = document.getElementById('rec-peak-title');
+            const rpD = document.getElementById('rec-peak-detail');
+            if(rpT && rpD) {
+                if (currentPeakKw >= DEMAND_CRITICAL_KW) {
+                    rpT.innerText = `Peak Demand สูง ${currentPeakKw.toFixed(1)} kW`;
+                    rpD.innerText = 'ควรพิจารณาสลับเวลาเดินเครื่องบางส่วน เพื่อลดการเกิด Demand สูงพร้อมกัน';
+                } else if (currentPeakKw >= DEMAND_WARNING_KW) {
+                    rpT.innerText = `Peak Demand ใกล้เกณฑ์ ${currentPeakKw.toFixed(1)} kW`;
+                    rpD.innerText = 'ระบบกำลังเฝ้าระวังโหลดรวม หากสูงขึ้นอีกจะสร้างการแจ้งเตือนทันที';
+                } else {
+                    rpT.innerText = `Peak Demand ปัจจุบัน ${currentPeakKw.toFixed(1)} kW`;
+                    rpD.innerText = 'โหลดรวมยังไม่ถึงเกณฑ์แจ้งเตือนของระบบ';
+                }
+            }
+
+            const rmT = document.getElementById('rec-machine-title');
+            const rmD = document.getElementById('rec-machine-detail');
+            if(rmT && rmD) {
+                if (abnormal) {
+                    rmT.innerText = `แนะนำตรวจสอบ ${abnormal.name}`;
+                    rmD.innerText = 'พบรูปแบบการใช้ไฟสูงกว่าค่าจำลองปกติ ระบบจึงสร้างสถานะเฝ้าระวังอัตโนมัติ';
+                } else {
+                    rmT.innerText = `โหลดสูงสุดขณะนี้: ${hottest ? hottest.name : '-'}`;
+                    rmD.innerText = 'ยังไม่พบจุดที่เข้าเงื่อนไขผิดปกติ';
+                }
+            }
+        }
+
+        function runCoherentDemoSimulation() {
+            demoTick++;
+            const cycle = (Math.sin(demoTick / 4) + 1) / 2;
+            const incidentActive = (demoTick % 24 >= 14 && demoTick % 24 <= 18);
+            currentTotalKwh = 0;
+            let instantaneousTotal = 0;
+
+            machines.forEach((m, i) => {
+                const base = machinesBase.find(b => b.id === m.id);
+                const profile = machineLoadProfile[m.id] || 0.3;
+                const wave = 0.72 + 0.20 * Math.sin((demoTick + i * 1.7) / 3) + 0.08 * cycle;
+                let liveLoad = Math.max(4, profile * 115 * wave);
+                let increment = liveLoad * (DEMO_INTERVAL_MS / 3600000);
+
+                m.demoStatus = 'active';
+                let statusLabel = 'กำลังทำงาน';
+                if (m.id === 'ice50_2' && incidentActive) { liveLoad *= 1.42; increment *= 1.42; m.demoStatus = 'critical'; statusLabel = 'ใช้ไฟสูง'; }
+                else if (m.id === 'coldroom' && demoTick % 18 >= 10 && demoTick % 18 <= 13) { liveLoad *= 1.18; increment *= 1.18; m.demoStatus='warning'; statusLabel='เฝ้าระวัง'; }
+                else if (m.id === 'water' && demoTick % 20 >= 15 && demoTick % 20 <= 16) { m.demoStatus='offline'; statusLabel='สัญญาณขาดช่วง'; liveLoad=0; increment=0; }
+                else if (m.id === 'ice10' && demoTick % 16 >= 11 && demoTick % 16 <= 14) { m.demoStatus='standby'; statusLabel='Standby'; liveLoad=3; increment=liveLoad*(DEMO_INTERVAL_MS/3600000); }
+                else if (m.id === 'office') { m.demoStatus='normal'; statusLabel='ปกติ'; }
+
+                m.liveLoad = liveLoad;
+                m.kwh = Math.max(base.kwh, m.kwh || base.kwh) + increment;
+                currentTotalKwh += m.kwh;
+                instantaneousTotal += liveLoad;
+                setMachineStatus(m.id, m.demoStatus, statusLabel);
+            });
+
+            currentPeakKw = 115 + instantaneousTotal * 0.22;
+            if (incidentActive) currentPeakKw += 10;
+
+            currentMonthThb += machines.reduce((sum, m) => sum + (m.liveLoad || 0), 0) * (DEMO_INTERVAL_MS / 3600000) * RATE_PER_KWH;
+
+            if (currentPeakKw >= DEMAND_CRITICAL_KW) {
+                pushDemoAlert('ระบบไฟฟ้ารวม', `Peak Demand สูงถึง ${currentPeakKw.toFixed(1)} kW`, 'critical', `peak-critical-${Math.floor(demoTick/4)}`);
+            } else if (currentPeakKw >= DEMAND_WARNING_KW) {
+                pushDemoAlert('ระบบไฟฟ้ารวม', `Peak Demand ใกล้เกณฑ์แจ้งเตือน ${currentPeakKw.toFixed(1)} kW`, 'warning', `peak-warning-${Math.floor(demoTick/6)}`);
+            }
+
+            const incident = machines.find(m => m.id === 'ice50_2' && m.demoStatus === 'critical');
+            if (incident) {
+                pushDemoAlert(incident.name, 'ตรวจพบการใช้กำลังไฟสูงกว่ารูปแบบปกติของเครื่อง', 'critical', `machine-${Math.floor(demoTick/5)}`);
+            }
+
+            updateDynamicRecommendations();
+            updateOverallStatus();
+            updateAllUI();
+        }
+
+        function simulateRealTime() {
+            if (!isToday) return;
+            const alTime = document.getElementById('alert-time');
+            if(alTime) alTime.innerText = demoTime();
+            runCoherentDemoSimulation();
+        }
+
+        // ----------------- MODULE 3: FLEET GPS -----------------
+        let deliveryMapInstance = null;
+        let vehicleMarkerObjects = {};
+        const TK_HQ_COORDS = [16.1685, 103.3150];
+
+        const vehiclesGpsData = [
+            { id: 'TK-01', coords: [16.2485, 103.2530], driver: 'นายสมชาย ใจดี', route: 'ขามเรียง - มอนอก', status: 'ส่งเสร็จสิ้น', isDone: true },
+            { id: 'TK-02', coords: [16.2200, 103.2700], driver: 'นายวิทยา ศรีวงศ์', route: 'ท่าขอนยาง - หน้าป้าย', status: 'กำลังส่ง', isDone: false },
+            { id: 'TK-03', coords: [16.1860, 103.3015], driver: 'นายประสิทธิ์ มีสุข', route: 'เมืองสารคาม - ตลาดสด', status: 'กำลังส่ง', isDone: false }
+        ];
+
+        function initOrResizeDeliveryMap() {
+            if (!deliveryMapInstance) {
+                deliveryMapInstance = L.map('delivery-leaflet-map', { center: [16.2050, 103.2850], zoom: 12, zoomControl: true });
+
+                L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+                }).addTo(deliveryMapInstance);
+
+                const hqIcon = L.divIcon({
+                    className: 'leaflet-div-icon',
+                    html: `
+                        <div class="relative flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold text-base shadow-xl hq-marker-glow">
+                                <i class="fa-solid fa-industry"></i>
+                            </div>
+                            <span class="bg-slate-900 text-amber-300 font-bold text-[9px] px-2 py-0.5 rounded shadow mt-1 whitespace-nowrap">โรงน้ำแข็ง ทีเคไอซ์</span>
+                        </div>
+                    `,
+                    iconSize: [40, 50], iconAnchor: [20, 25]
+                });
+                L.marker(TK_HQ_COORDS, { icon: hqIcon }).addTo(deliveryMapInstance).bindPopup("<b>โรงน้ำแข็ง ทีเคไอซ์ (สำนักงานใหญ่)</b><br>369 หมู่ 1 ต.หนองโน อ.เมืองมหาสารคาม");
+
+                vehiclesGpsData.forEach(v => {
+                    const vIcon = L.divIcon({
+                        className: 'leaflet-div-icon',
+                        html: `
+                            <div class="relative flex flex-col items-center">
+                                <div class="pulse-ring ${v.isDone ? 'bg-emerald-400' : 'bg-blue-400'}"></div>
+                                <div class="${v.isDone ? 'bg-emerald-600' : 'bg-blue-600'} text-white font-bold text-[10px] px-2 py-0.5 rounded-full shadow border-2 border-white flex items-center gap-1">
+                                    <i class="fa-solid fa-truck"></i> ${v.id}
+                                </div>
+                            </div>
+                        `,
+                        iconSize: [60, 40], iconAnchor: [30, 20]
+                    });
+                    const m = L.marker(v.coords, { icon: vIcon }).addTo(deliveryMapInstance).bindPopup(`<b>${v.id} - ${v.driver}</b><br>เส้นทาง: ${v.route}<br>สถานะ: ${v.status}`);
+                    vehicleMarkerObjects[v.id] = m;
+                });
+            } else {
+                deliveryMapInstance.invalidateSize();
+            }
+        }
+
+        function focusDeliveryVehicle(id) {
+            const m = vehicleMarkerObjects[id];
+            if (m && deliveryMapInstance) {
+                deliveryMapInstance.flyTo(m.getLatLng(), 15, { duration: 1 });
+                setTimeout(() => m.openPopup(), 1100);
+            }
+        }
+
+        // ----------------- MODULE 4: SALES & CUSTOMERS -----------------
+        let salesOrdersData = [
+            { time: '10:15', customer: 'ร้านหมูกระทะขามเรียง (มอนอก)', product: 'น้ำแข็งหลอด (ใหญ่)', qty: '300 ถุง', total: 3600, payment: 'โอนเงิน' },
+            { time: '08:15', customer: 'ร้านทวีชัย', product: 'น้ำแข็งหลอด (เล็ก)', qty: '50 กระสอบ', total: 1600, payment: 'เงินสด' },
+            { time: '09:32', customer: 'ร้านป.เจริญค้า', product: 'น้ำแข็งหลอด (ใหญ่)', qty: '30 กระสอบ', total: 1200, payment: 'โอนเงิน' },
+            { time: '11:05', customer: 'ร้านนครพัฒนา', product: 'น้ำแข็งหลอด (เล็ก)', qty: '80 กระสอบ', total: 3200, payment: 'เครดิต' }
+        ];
+
+        function renderSalesOrders() {
+            const tbody = document.getElementById('sales-orders-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            salesOrdersData.forEach(ord => {
+                let btn = ord.payment === 'โอนเงิน' 
+                    ? `<button onclick="openSlipModal('${ord.customer}', '${ord.total}', '${ord.product}', '${ord.time}')" class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded cursor-pointer">ดูสลิป</button>`
+                    : `<span class="text-slate-400 italic">เงินสด</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-3 font-mono text-slate-500">${ord.time}</td>
+                        <td class="p-3 font-bold text-slate-800">${ord.customer}</td>
+                        <td class="p-3 text-slate-600">${ord.product}</td>
+                        <td class="p-3 text-center">${ord.qty}</td>
+                        <td class="p-3 text-right font-bold text-emerald-600">${ord.total.toLocaleString()} ฿</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${ord.payment === 'โอนเงิน' ? 'bg-blue-100 text-blue-800' : ord.payment === 'เครดิต' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${ord.payment}</span></td>
+                        <td class="p-3 text-center">${btn}</td>
+                    </tr>
+                `;
+            });
+
+            const ctxS = document.getElementById('salesBarChart')?.getContext('2d');
+            if(ctxS) {
+                new Chart(ctxS, {
+                    type: 'bar',
+                    data: {
+                        labels: ['28 ก.ย.', '29 ก.ย.', '30 ก.ย.', '1 ต.ค.', '2 ต.ค.', '3 ต.ค.', '4 ต.ค.'],
+                        datasets: [{ data: [32000, 35000, 41000, 48000, 52000, 54000, 58420], backgroundColor: '#0284c7', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+        }
+
+        function openNewBillModal() { document.getElementById('newBillModal').classList.remove('hidden'); }
+        function openDebtModal() { document.getElementById('debtModal').classList.remove('hidden'); }
+        function openSlipModal(c, amt, prod, time) {
+            document.getElementById('slipModalSender').innerText = c;
+            document.getElementById('slipModalAmount').innerText = `${Number(amt).toLocaleString()}.00 ฿`;
+            document.getElementById('slipModalProduct').innerText = prod;
+            document.getElementById('slipModalTime').innerText = `${time} น.`;
+            document.getElementById('slipModal').classList.remove('hidden');
+        }
+
+        function handleNewBillSubmit(e) {
+            e.preventDefault();
+            const cust = document.getElementById('inputCustomer').value;
+            const p = document.getElementById('inputProduct').value;
+            const q = document.getElementById('inputQty').value;
+            const amt = Number(document.getElementById('inputAmount').value);
+            const pay = document.getElementById('inputPayment').value;
+            salesOrdersData.unshift({ time: '11:20', customer: cust, product: p, qty: `${q} กระสอบ`, total: amt, payment: pay });
+            closeModal('newBillModal');
+            renderSalesOrders();
+            alert('เปิดบิลขายใหม่สำเร็จ');
+        }
+
+        // ----------------- MODULE 5: HR & EMPLOYEES -----------------
+        let hrEmployeesList = [];
+        let hrCurrentPage = 1;
+        const hrPageSize = 12;
+
+        function initHrData() {
+            const depts = ["แผนกผลิต", "แผนกขาย", "แผนกบัญชี", "แผนกซ่อมบำรุง", "ออฟฟิศ"];
+            hrEmployeesList = [];
+            for(let i=1; i<=45; i++) {
+                let st = (i % 15 === 0) ? "ขาด" : (i % 9 === 0) ? "ลา" : "มาทำงาน";
+                hrEmployeesList.push({
+                    no: i,
+                    id: `TK${String(i).padStart(3, '0')}`,
+                    name: `พนักงาน คนที่ ${i}`,
+                    dept: depts[i % depts.length],
+                    pos: 'เจ้าหน้าที่ปฏิบัติการ',
+                    timeIn: st === "มาทำงาน" ? "07:58" : "-",
+                    status: st
+                });
+            }
+            renderHrTable();
+        }
+
+        function renderHrTable() {
+            const tbody = document.getElementById('hr-emp-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const total = hrEmployeesList.length;
+            const totalPages = Math.ceil(total / hrPageSize);
+            const start = (hrCurrentPage - 1) * hrPageSize;
+            const end = Math.min(start + hrPageSize, total);
+            const paged = hrEmployeesList.slice(start, end);
+
+            paged.forEach(emp => {
+                let badge = emp.status === 'มาทำงาน' 
+                    ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">● มา</span>` 
+                    : emp.status === 'ลา' ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">● ลา</span>` : `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full font-bold">● ขาด</span>`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-3 text-center text-slate-400 font-bold">${emp.no}</td>
+                        <td class="p-3 font-semibold text-slate-800">${emp.id}</td>
+                        <td class="p-3 font-bold">${emp.name}</td>
+                        <td class="p-3 text-slate-500">${emp.dept}</td>
+                        <td class="p-3 text-slate-500">${emp.pos}</td>
+                        <td class="p-3 text-center font-mono">${emp.timeIn}</td>
+                        <td class="p-3 text-center">${badge}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('hr-start-idx').innerText = start + 1;
+            document.getElementById('hr-end-idx').innerText = end;
+
+            const btns = document.getElementById('hr-pagination-btns');
+            btns.innerHTML = '';
+            for(let p=1; p<=totalPages; p++) {
+                btns.innerHTML += `<button onclick="goHrPage(${p})" class="w-7 h-7 rounded-lg text-xs font-bold ${p === hrCurrentPage ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'} cursor-pointer">${p}</button>`;
+            }
+        }
+
+        function goHrPage(p) { hrCurrentPage = p; renderHrTable(); }
+
+        // ----------------- WINDOW ONLOAD INITIALIZATION -----------------
+        window.addEventListener('DOMContentLoaded', () => {
+            // Init Energy Submeters & Telemetry
+            initSubmetersHTML();
+            renderAlerts();
+            initEnergyCharts();
+            changeDate(todayStr);
+            updateDynamicRecommendations();
+            setInterval(simulateRealTime, DEMO_INTERVAL_MS);
+
+            // Init other modules
+            renderSalesOrders();
+            initHrData();
+
+            // Mobile menu toggle
+            document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
+```
